@@ -89,7 +89,7 @@ If you need to reload service for user `vagrant`, you can use
 
 ## LWRP
 
-Cookbook provide `chef_eye_application` resource. This is a main resource for configure eye configuration.
+Cookbook provide `chef_eye_application` resource. This is a main resource for generate eye configuration.
 
     chef_eye_application 'name_of_my_app' do
       owner 'ubuntu'
