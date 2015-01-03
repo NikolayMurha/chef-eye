@@ -37,12 +37,50 @@ Cookbook for setup [eye](https://github.com/kostya/eye) service and applications
 </table>
 
 ## Usage
+
 ### Ruby
 
 Cookbook used system ruby and try to install `ruby`, `ruby-dev` packages if `node['eye']['install_ruby']` set to `true`
 If  you want to use custom system ruby, you need set `node['eye']['install_ruby']` to `false` and install custom ruby before
 before this cookbook. For example, if you want to use `uid` and `gid` [application options](https://github.com/kostya/eye/issues/50),
 you need install ruby 2.0.0 as system ruby. Its installation is your concern.
+
+
+##Service
+
+Services named by `eye_` prefix and username. For example, service for user vagrant, well be named as `eye_vagrant`.
+service for user root as `eye_root`, etc.
+
+If you need to reload service for user `vagrant`, you can use
+
+    some_resource do
+      ...
+      notifies :reload, 'service[eye_vagrant]'
+    end
+
+if you want to configure service fore some user, you can setup it
+
+    default['eye']['services'] = {
+      ubuntu: {
+        'logger' => '/var/log/eye/ubuntu.log'
+        'mail' => {
+          'host' => 'mx.some.host',
+          'port' => 25,
+          'domain' => 'some.host'
+        },
+        contacts: {
+          'errors' => {
+            'type' => 'mail',
+            'contact' => 'error@some.host'
+          },
+          'dev' => {
+            'type' => 'mail',
+            'contact' => 'error@some.host',
+            'opts' => {}
+          },
+        }
+      }
+    }
 
 ### Configuration
 
@@ -88,18 +126,6 @@ You can use any valid eye [options](https://github.com/kostya/eye/tree/master/ex
 This cookbook will install the eye service for user 'vagrant' (`/etc/init.d/eye_vagrant`) and generate valid '.eye' configuration file
 (`/etc/eye/vagrant/my_app.eye`).
 
-
-##Service
-
-Services named by `eye_` prefix and username. For example, service for user vagrant, well be named as `eye_vagrant`.
-service for user root as `eye_root`, etc.
-
-If you need to reload service for user `vagrant`, you can use
-
-    some_resource do
-      ...
-      notifies :reload, 'service[eye_vagrant]'
-    end
 
 ## LWRP
 
