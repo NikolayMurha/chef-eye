@@ -89,6 +89,8 @@ If you need to reload service for user `vagrant`, you can use
 
 ## LWRP
 
+### chef_eye_application
+
 Cookbook provide `chef_eye_application` resource. This is a main resource for generate eye configuration.
 
     chef_eye_application 'name_of_my_app' do
@@ -151,7 +153,7 @@ or as hash
     end
 
 
-###Important! If you use LWRP, you need to add owner of application to `node['eye']['services']` attribute manually.
+#### Important! If you use LWRP, you need to add owner of application to `node['eye']['services']` attribute manually.
 
 
 ### chef-eye::default
