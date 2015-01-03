@@ -3,9 +3,6 @@
 module EyeCookbook
   module ConfigRender
     module Methods
-      MAPPED_FUNCTIONS = {
-        contact: [Symbol, Symbol, String, Hash]
-      }
 
       TYPED_FUNCTIONS = [:check, :trigger]
       BLOCKS = [:monitor_children]
@@ -54,15 +51,19 @@ module EyeCookbook
         ret.compact.flatten.map {|i| "  #{i}"}
       end
 
-      MAPPED_FUNCTIONS.each do |name, types|
-        define_method "render_#{name}" do |value|
+      def render_contact(value)
           ret = []
-          value.each do |args|
-            args.each_index {|i| args[i] = to_type(args[i], types[i]) }
-            ret.push "#{name}(#{args.map {|arg| arg.to_source(source_mode) }.join(', ')})"
+          value.each do |name, options|
+            options = symbolize_keys(options)
+            name = options[:name] || name
+            args = []
+            args << name.to_sym
+            args << options[:type].to_sym
+            args << options[:contact].to_s
+            args << options[:opts].to_h if options[:opts]
+            ret.push "contact(#{args.map{|arg| arg.to_source(source_mode)}.join(', ')})"
           end
           ret
-        end
       end
 
       BLOCKS.each do |name|
