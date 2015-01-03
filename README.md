@@ -28,9 +28,23 @@ Cookbook for setup [eye](https://github.com/kostya/eye) service and applications
     <td>Applications configurations</td>
     <td><tt>{}</tt></td>
   </tr>
+  <tr>
+    <td><tt>['chef_eye']['install_ruby']</tt></td>
+    <td>Boolean</td>
+    <td>Try to install ruby packages `ruby`, `ruby-dev`</td>
+    <td><tt>true</tt></td>
+  </tr>
 </table>
 
 ## Usage
+### Ruby
+
+Cookbook used system ruby and try to install `ruby`, `ruby-dev` packages if `node['eye']['install_ruby']` set to `true`
+If  you want to use custom system ruby, you need set `node['eye']['install_ruby']` to `false` and install custom ruby before
+before this cookbook. For example, if you want to use `uid` and `gid` [application options](https://github.com/kostya/eye/issues/50),
+you need install ruby 2.0.0 as system ruby. Its installation is your concern.
+
+### Configuration
 
 You can use any valid eye [options](https://github.com/kostya/eye/tree/master/examples). For example:
 
@@ -156,7 +170,7 @@ or as hash
 #### Important! If you use LWRP, you need to add owner of application to `node['eye']['services']` attribute manually.
 
 
-### chef-eye::default
+### chef_eye::default
 
 Include `chef_eye` in your node's `run_list`:
 
