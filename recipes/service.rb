@@ -27,8 +27,7 @@ EyeCookbook::Utils.services(node).each do |user_name, config|
     end
   end
 
-
-  #service config
+  #TODO Validate config
   template "#{config_dir}/_config.eye" do
     source 'config.eye.erb'
     owner user_name
