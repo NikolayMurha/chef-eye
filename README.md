@@ -38,13 +38,26 @@ Cookbook for setup [eye](https://github.com/kostya/eye) service and applications
 
 ## Usage
 
+## Recipes
+
+### chef_eye::default
+
+Include `chef_eye` in your node's `run_list`:
+
+```json
+{
+  "run_list": [
+    "recipe[chef_eye::default]"
+  ]
+}
+```
+
 ### Ruby
 
 Cookbook used system ruby and try to install `ruby`, `ruby-dev` packages if `node['eye']['install_ruby']` set to `true`
 If  you want to use custom system ruby, you need set `node['eye']['install_ruby']` to `false` and install custom ruby before
 before this cookbook. For example, if you want to use `uid` and `gid` [application options](https://github.com/kostya/eye/issues/50),
 you need install ruby 2.0.0 as system ruby. Its installation is your concern.
-
 
 ##Service
 
@@ -192,21 +205,14 @@ or as hash
       notifies :reload, 'service[eye_ubuntu]' # you need notify service for reload
     end
 
+### Helper
+
+`chef_eye_application` resource have `helper` (String) and `helper_prefix` (String, default: owner name) attributes.
+If helper is true, resource will generate `/usr/local/sbin/<prefix>_<application_name>` executable scripts.
+By default for `my_app` helper is `/usr/local/sbin/vagrant_my_app`.
+This script run all command only for `my_app` namespace.
 
 #### Important! If you use LWRP, you need to add owner of application to `node['eye']['services']` attribute manually.
-
-
-### chef_eye::default
-
-Include `chef_eye` in your node's `run_list`:
-
-```json
-{
-  "run_list": [
-    "recipe[chef_eye::default]"
-  ]
-}
-```
 
 ## License and Authors
 
