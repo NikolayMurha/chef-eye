@@ -11,7 +11,7 @@
 # Short-Description: starts <%= @service_name %> by eye
 ### END INIT INFO
 
-EYE_BIN=<%= @node['eye']['bin'] %>
+EYE_BIN=<%= @node['chef_eye']['bin'] %>
 CONFIG_DIR=<%= @config_dir %>
 RUN_USER=<%= @user || 'root' %>
 LOG_FILE=<%= @log_file|| '/var/log/eye.log' %>

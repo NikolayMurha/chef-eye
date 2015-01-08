@@ -1,7 +1,7 @@
 
 gem = chef_gem 'eye'
 gem.run_action(:install)
-node['eye']['applications'].each do |name, options|
+node['chef_eye']['applications'].each do |name, options|
   options = options.to_hash
   owner = options.delete('owner') || 'root'
   group = options.delete('group')

@@ -26,7 +26,7 @@ action :configure do
       variables(
         user: new_resource.owner,
         application_name: new_resource.name,
-        eye_bin: node['eye']['bin']
+        eye_bin: node['chef_eye']['bin']
       )
     end
   end

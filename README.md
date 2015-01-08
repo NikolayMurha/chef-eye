@@ -54,8 +54,8 @@ Include `chef_eye` in your node's `run_list`:
 
 ### Ruby
 
-Cookbook used system ruby and try to install `ruby`, `ruby-dev` packages if `node['eye']['install_ruby']` set to `true`
-If  you want to use custom system ruby, you need set `node['eye']['install_ruby']` to `false` and install custom ruby before
+Cookbook used system ruby and try to install `ruby`, `ruby-dev` packages if `node['chef_eye']['install_ruby']` set to `true`
+If  you want to use custom system ruby, you need set `node['chef_eye']['install_ruby']` to `false` and install custom ruby before
 before this cookbook. For example, if you want to use `uid` and `gid` [application options](https://github.com/kostya/eye/issues/50),
 you need install ruby 2.0.0 as system ruby. Its installation is your concern.
 
@@ -73,7 +73,7 @@ If you need to reload service for user `vagrant`, you can use
 
 if you want to configure service fore some user, you can setup it
 
-    default['eye']['services'] = {
+    default['chef_eye']['services'] = {
       ubuntu: {
         'logger' => '/var/log/eye/ubuntu.log'
         'mail' => {
@@ -99,7 +99,7 @@ if you want to configure service fore some user, you can setup it
 
 You can use any valid eye [options](https://github.com/kostya/eye/tree/master/examples). For example:
 
-    default['eye']['applications']['my_app'] = {
+    default['chef_eye']['applications']['my_app'] = {
       owner: 'vagrant', # required
       group: 'vagrant',
       checks: {
@@ -212,7 +212,7 @@ If helper is true, resource will generate `/usr/local/sbin/<prefix>_<application
 By default for `my_app` helper is `/usr/local/sbin/vagrant_my_app`.
 This script run all command only for `my_app` namespace.
 
-#### Important! If you use LWRP, you need to add owner of application to `node['eye']['services']` attribute manually.
+#### Important! If you use LWRP, you need to add owner of application to `node['chef_eye']['services']` attribute manually.
 
 ## License and Authors
 
