@@ -13,11 +13,17 @@ directory '/etc/eye' do
   action :create
 end
 
+cookbook_file 'functions' do
+  path '/etc/eye/functions'
+  action :create
+end
+
 #create service per users
 EyeCookbook::Utils.services(node).each do |user_name, config|
   service_name = "eye_#{user_name}"
   config_dir = "/etc/eye/#{user_name}"
   log_dir = "/var/log/eye/#{user_name}"
+  log_file = ::File.join(log_dir, 'eye.log')
   [config_dir, log_dir].each do |dir|
     directory dir do
       recursive true
@@ -27,6 +33,13 @@ EyeCookbook::Utils.services(node).each do |user_name, config|
     end
   end
 
+  file log_file do
+    owner user_name
+    group user_name
+    action :touch
+  end
+
+  config = {logger: log_file }.merge(config || {})
   #TODO Validate config
   template "#{config_dir}/_config.eye" do
     source 'config.eye.erb'
@@ -50,7 +63,7 @@ EyeCookbook::Utils.services(node).each do |user_name, config|
       user: user_name,
       service_name: service_name,
       config_dir: config_dir,
-      log_file: ::File.join(log_dir, 'eye.log')
+      log_file: log_file
     )
   end
 

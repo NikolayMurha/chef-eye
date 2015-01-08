@@ -24,9 +24,9 @@ action :configure do
       group new_resource.group
       mode '0744'
       variables(
-        user: new_resource.owner,
-        application_name: new_resource.name,
-        eye_bin: node['chef_eye']['bin']
+        resource: new_resource,
+        log_file: ::File.join("/var/log/eye", new_resource.owner, ""),
+        node: node
       )
     end
   end

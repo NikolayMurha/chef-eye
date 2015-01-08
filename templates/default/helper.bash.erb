@@ -1,37 +1,15 @@
 #!/bin/bash
 
-RUN_USER='<%=@user %>'
-PROJECT='<%=@application_name %>'
-EYE_BIN='<%=@eye_bin %>'
-COMMANDS=( break delete history info match monitor restart signal start stop trace unmonitor user_command watch )
+EYE_BIN=<%= @node['chef_eye']['bin'] %>
+CONFIG_DIR=<%= "/etc/eye/#{@resource.owner}" %>
+RUN_USER=<%= @resource.owner || 'root' %>
+LOG_FILE=<%= @log_file || '/var/log/eye.log' %>
+MASK=<%= @resource.name %>
+COMMANDS=( break delete history info match monitor restart reload signal start stop trace unmonitor user_command watch check )
 COMMAND=$1
 PROCCESS=$2
 
-is_rvm() {
-  if [ "$USER" = "$RUN_USER" ];
-  then
-    bash -l -c "type rvm | cat | head -1 | grep -q '^rvm is a function$'" > /dev/null 2>&1
-  else
-    su $RUN_USER -l -c "type rvm | cat | head -1 | grep -q '^rvm is a function$'" > /dev/null 2>&1
-  fi
-  return $?
-}
-
-execute() {
-  if is_rvm;
-  then
-    CMD="rvm system do $EYE_BIN $1 $2"
-  else
-    CMD="$EYE_BIN $1 $2"
-  fi
-
-  if [ "$USER" = "$RUN_USER" ]; then
-    $CMD
-  else
-    su $RUN_USER -l -c "$CMD"
-  fi
-  return $?
-}
+source /etc/eye/functions
 
 check_command() {
     local r=1;
@@ -47,9 +25,20 @@ check_command() {
 
 if check_command; then
    if [ ! -z $PROCCESS ]; then
-   PROJECT="$PROJECT:$PROCCESS"
+     PROJECT="$MASK:$PROCCESS"
    fi
-   execute $COMMAND $PROJECT
+    case "$COMMAND" in
+      check)
+        check_one "$MASK.eye"
+      ;;
+      reload)
+        reload $MASK
+      ;;
+      *)
+      execute $COMMAND $MASK
+      ;;
+    esac
+
 else
-    echo "Unexpected $COMMAND; Usage: $0 {break|delete|history|info|match|monitor|restart|signal|start|stop|trace|unmonitor|user_command|watch}"
+    echo "Unexpected $COMMAND; Usage: $0 {break|delete|history|info|match|monitor|restart|reload|signal|start|stop|trace|unmonitor|user_command|watch|check}"
 fi

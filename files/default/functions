@@ -1,0 +1,132 @@
+#!/bin/bash
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+CLEAR='\033[0m'
+
+eye_log() {
+  echo "`date`:$RUN_USER: $1 " >> $LOG_FILE
+}
+
+is_rvm() {
+  if [ "$USER" = "$RUN_USER" ];
+  then
+    bash -l -c "type rvm | cat | head -1 | grep -q '^rvm is a function$'" > /dev/null 2>&1
+  else
+    su $RUN_USER -l -c "type rvm | cat | head -1 | grep -q '^rvm is a function$'" > /dev/null 2>&1
+  fi
+  return $?
+}
+
+run_as() {
+  if [ "$USER" = "$RUN_USER" ]; then
+    $1
+  else
+    su $RUN_USER -l -c "$1"
+  fi
+  return $?
+}
+
+execute() {
+  if is_rvm;
+  then
+    CMD="rvm system do $EYE_BIN $1 $2"
+  else
+    CMD="$EYE_BIN $1 $2"
+  fi
+  run_as "$CMD"
+  return $?
+}
+
+status() {
+   echo "Info:"
+   echo ""
+   execute info $MASK
+   echo ""
+   if [ $1 ]; then
+      echo "Xinfo:"
+      echo ""
+      execute xinfo
+      echo ""
+      echo "Config:"
+      echo ""
+      execute xinfo -c
+   fi
+}
+
+start() {
+  execute load #run eye daemon
+  reload #reload config
+}
+
+stop() {
+   execute quit
+}
+
+check_all() {
+  CHECK=0
+  for CONFIG_FILE in `ls -1 $CONFIG_DIR`
+  do
+    if check $CONFIG_FILE; then
+      echo -e  "Check $CONFIG_FILE [ ${GREEN}OK${CLEAR} ]"
+    else
+      CHECK=1
+      echo -e "Check $CONFIG_FILE [ ${RED}FAIL${CLEAR} ]"
+      echo "  $OUTPUT"
+    fi
+  done
+  return $CHECK
+}
+
+check_one() {
+    if check $1; then
+      echo -e "Check $CONFIG_FILE [ ${GREEN}OK${CLEAR} ]"
+    else
+      echo -e "Check $CONFIG_FILE [ ${RED}FAIL${CLEAR} ]"
+      echo "  $OUTPUT"
+    fi
+}
+
+load_config() {
+    if check $CONFIG_FILE; then
+        RES=$(execute load "$CONFIG_FILE" 2>&1)
+        if [ "$?" -eq "0" ];
+        then
+            echo -e "Load $CONFIG_FILE  [ ${GREEN}OK${CLEAR} ]"
+        else
+            eye_log "$RES"
+            echo -e "Load $CONFIG_FILE  [ ${RED}FAIL${CLEAR} ]"
+        fi
+    else
+      echo -e "Check $CONFIG_FILE [ ${RED}FAIL${CLEAR} ]"
+      echo -e "  $OUTPUT"
+    fi
+}
+
+check() {
+    CONFIG_FILE=$(realpath "$CONFIG_DIR/$1")
+    OUTPUT=$(execute check $CONFIG_FILE 2>&1)
+    RESULT=$?
+    return $RESULT
+}
+
+explain() {
+    CONFIG_FILE=$(realpath "$CONFIG_DIR/$1")
+    execute explain $CONFIG_FILE
+}
+
+reload() {
+  if [ ! -z $1 ]; then
+    CONFIG_FILE="$1.eye"
+    load_config
+  else
+      eye_log $(execute delete all 2>&1)
+      CONFIG_COUNT=$(ls -1 $CONFIG_DIR | wc -l);
+      if [ $CONFIG_COUNT \> 0 ]; then
+         for CONFIG_FILE in `ls -1 $CONFIG_DIR`
+         do
+          load_config
+         done
+      fi
+  fi
+}
