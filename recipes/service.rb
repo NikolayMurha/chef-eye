@@ -40,7 +40,7 @@ EyeCookbook::Utils.services(node).each do |user_name, config|
   end
 
   template "/etc/init.d/#{service_name}" do
-    source 'init.d.sh.erb'
+    source 'init.d.bash.erb'
     owner 'root'
     group 'root'
     mode '0755'

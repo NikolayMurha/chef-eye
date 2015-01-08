@@ -5,4 +5,4 @@ default['eye']['services'] = ['root']
 default['eye']['applications'] = {}
 
 
-default['eye']['services'] = [:root]
+default['eye']['services'] = [ 'root' ]

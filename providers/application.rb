@@ -14,6 +14,22 @@ action :configure do
       resource: new_resource
     )
   end
+
+  if new_resource.helper
+    helper_name = "#{new_resource.helper_prefix || new_resource.owner}_#{new_resource.name}"
+    template "/usr/local/sbin/#{helper_name}" do
+      source 'helper.bash.erb'
+      cookbook new_resource.cookbook
+      owner new_resource.owner
+      group new_resource.group
+      mode '0744'
+      variables(
+        user: new_resource.owner,
+        application_name: new_resource.name,
+        eye_bin: node['eye']['bin']
+      )
+    end
+  end
 end
 
 action :delete do

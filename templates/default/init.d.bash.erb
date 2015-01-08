@@ -27,7 +27,6 @@ eye_log() {
 is_rvm() {
   if [ "$USER" = "$RUN_USER" ];
   then
-    echo 'is_rvm current user'
     bash -l -c "type rvm | cat | head -1 | grep -q '^rvm is a function$'" > /dev/null 2>&1
   else
     su $RUN_USER -l -c "type rvm | cat | head -1 | grep -q '^rvm is a function$'" > /dev/null 2>&1

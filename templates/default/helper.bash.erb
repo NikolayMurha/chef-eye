@@ -1,0 +1,55 @@
+#!/bin/bash
+
+RUN_USER='<%=@user %>'
+PROJECT='<%=@application_name %>'
+EYE_BIN='<%=@eye_bin %>'
+COMMANDS=( break delete history info match monitor restart signal start stop trace unmonitor user_command watch )
+COMMAND=$1
+PROCCESS=$2
+
+is_rvm() {
+  if [ "$USER" = "$RUN_USER" ];
+  then
+    bash -l -c "type rvm | cat | head -1 | grep -q '^rvm is a function$'" > /dev/null 2>&1
+  else
+    su $RUN_USER -l -c "type rvm | cat | head -1 | grep -q '^rvm is a function$'" > /dev/null 2>&1
+  fi
+  return $?
+}
+
+execute() {
+  if is_rvm;
+  then
+    CMD="rvm system do $EYE_BIN $1 $2"
+  else
+    CMD="$EYE_BIN $1 $2"
+  fi
+
+  if [ "$USER" = "$RUN_USER" ]; then
+    $CMD
+  else
+    su $RUN_USER -l -c "$CMD"
+  fi
+  return $?
+}
+
+check_command() {
+    local r=1;
+    for i in "${COMMANDS[@]}"
+    do
+       if [[ $i == "$COMMAND" ]];  then
+        r=0
+        break
+       fi
+    done
+    return $r
+}
+
+if check_command; then
+   if [ ! -z $PROCCESS ]; then
+   PROJECT="$PROJECT:$PROCCESS"
+   fi
+   execute $COMMAND $PROJECT
+else
+    echo "Unexpected $COMMAND; Usage: $0 {break|delete|history|info|match|monitor|restart|signal|start|stop|trace|unmonitor|user_command|watch}"
+fi
