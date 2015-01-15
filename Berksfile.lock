@@ -1,0 +1,7 @@
+DEPENDENCIES
+  chef_eye
+    path: .
+    metadata: true
+
+GRAPH
+  chef_eye (0.2.3)
