@@ -1,16 +1,14 @@
 module EyeCookbook
   module Utils
-    def self.services(node)
-      services = node['chef_eye']['services']
-      services = if services.is_a?(Array)
-                   Hash[services.zip(Array.new(services.size, {}))]
-                 else
-                   services.to_hash
-                 end
-      node['chef_eye']['applications'].each do |_, options|
-        services[options['owner']] = {} if options['type'] != 'local' && !services[options['owner']]
+    class << self
+      def services(node)
+        services = node['chef_eye']['services']
+        services = services.is_a?(Array) ? Hash[services.zip(Array.new(services.size, {}))] : services.to_hash
+        node['chef_eye']['applications'].each do |_, options|
+          services[options['owner']] ||= {} if options['type'] != 'local'
+        end
+        services
       end
-      services
     end
   end
 end

@@ -42,5 +42,5 @@ action :delete do
 end
 
 def validate_name
-  raise "Name '_config' is reserved and not allowed as application_name!" if new_resource.name == '_config'
+  fail "Name '_config' is reserved and not allowed as application_name!" if new_resource.name == '_config'
 end

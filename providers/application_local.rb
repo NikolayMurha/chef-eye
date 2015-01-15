@@ -9,7 +9,7 @@ action :configure do
   eye_file = ::File.join(new_resource.eye_home, new_resource.eye_file)
   eye_bin = ::File.join(new_resource.eye_home, 'leye')
 
-  [ new_resource.eye_home, log_dir ].each do |dir|
+  [new_resource.eye_home, log_dir].each do |dir|
     directory dir do
       recursive true
       owner new_resource.owner
@@ -31,7 +31,6 @@ action :configure do
       application_config: new_resource.config.config,
       eye_config: new_resource.eye_config.config
     )
-
   end
 
   # leye wrapper
@@ -73,7 +72,7 @@ action :configure do
   end
 
   service service_name do
-    supports :status => true, :restart => true, :start => true, :reload => true
+    supports status: true, restart: true, start: true, reload: true
     action :enable
     subscribes :reload, "template[#{eye_file}]"
   end

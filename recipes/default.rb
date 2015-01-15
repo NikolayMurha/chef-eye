@@ -6,9 +6,6 @@
 #
 # All rights reserved - Do Not Redistribute
 
-
 include_recipe 'chef_eye::ruby'
 include_recipe 'chef_eye::service'
 include_recipe 'chef_eye::applications'
-
-

@@ -19,7 +19,7 @@ cookbook_file 'functions' do
   action :create
 end
 
-#create service per users
+# create service per users
 EyeCookbook::Utils.services(node).each do |user_name, config|
   service_name = "eye_#{user_name}"
   config_dir = "/etc/eye/#{user_name}"
@@ -40,8 +40,8 @@ EyeCookbook::Utils.services(node).each do |user_name, config|
     action :touch
   end
 
-  config = {logger: log_file }.merge(config || {})
-  #TODO Validate config
+  config = { logger: log_file }.merge(config || {})
+  # TODO: validate config
   template "#{config_dir}/_config.eye" do
     source 'config.eye.erb'
     owner user_name
@@ -67,9 +67,9 @@ EyeCookbook::Utils.services(node).each do |user_name, config|
     )
   end
 
-  #create service pr user
+  # create service pr user
   service service_name do
-    supports :status => true, :restart => true, :start => true, :reload => true
+    supports status: true, restart: true, start: true, reload: true
     action :enable
   end
 end

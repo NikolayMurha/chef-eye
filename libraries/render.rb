@@ -1,9 +1,8 @@
 
-#TODO Think how to refactor this shit
+# TODO: Think how to refactor this shit
 module EyeCookbook
   module ConfigRender
     module Methods
-
       TYPED_FUNCTIONS = [:check, :trigger]
       BLOCKS = [:monitor_children]
       TYPED_BLOCKS = [:group, :process, :contact_group]
@@ -19,9 +18,7 @@ module EyeCookbook
         contacts: :contact
       }
 
-      def source_mode=(source_mode)
-        @source_mode = source_mode
-      end
+      attr_writer :source_mode
 
       def source_mode
         @source_mode ||= SOURCE_MODE_SYMBOLIZE_KEYS
@@ -43,27 +40,26 @@ module EyeCookbook
           method = inflect(method)
           render_strategy = "render_#{method}".to_sym
           if self.respond_to?(render_strategy)
-            ret.push self.send(render_strategy, value)
+            ret.push send(render_strategy, value)
           else
             ret.push "#{method}(#{value.to_source(source_mode)})"
           end
         end
-        ret.compact.flatten.map {|i| "  #{i}"}
+        ret.compact.flatten.map { |i| "  #{i}" }
       end
 
       def render_contact(value)
-          ret = []
-          value.each do |name, options|
-            options = symbolize_keys(options)
-            name = options[:name] || name
-            args = []
-            args << name.to_sym
-            args << options[:type].to_sym
-            args << options[:contact].to_s
-            args << options[:opts].to_h if options[:opts]
-            ret.push "contact(#{args.map{|arg| arg.to_source(source_mode)}.join(', ')})"
-          end
+        value.each_with_object([]) do |(name, options), ret|
+          options = symbolize_keys(options)
+          args = []
+          args.push((options[:name] || name).to_sym)
+          args.push(options[:type].to_sym)
+          args.push(options[:contact].to_s)
+          args.push(options[:opts].to_h) if options[:opts]
+          args.map! { |arg| arg.to_source(source_mode) }
+          ret.push "contact(#{args.join(', ')})"
           ret
+        end
       end
 
       BLOCKS.each do |name|
@@ -78,87 +74,72 @@ module EyeCookbook
 
       TYPED_BLOCKS.each do |name|
         define_method "render_#{name}" do |value|
-          ret = []
-          value.each do |block_type, config|
+          value.each_with_object([]) do |(block_type, config), ret|
             ret.push "#{name}(#{block_type.to_source(source_mode)}) do"
             ret.push render_hash(config)
             ret.push 'end'
           end
-          ret
         end
       end
 
       TYPED_FUNCTIONS.each do |name|
         define_method "render_#{name}" do |value|
-          ret = []
-          value.each do |func_name, args|
+          value.each_with_object([]) do |(func_name, args), ret|
             ret.push "#{name}(#{func_name.to_sym.to_source(source_mode)}, #{args.to_source(source_mode)})"
           end
-          ret
         end
       end
 
       def symbolize_keys(hash)
-        h = {}
-        hash.each { |key, val| h[key.to_sym] = val }
-        h
-      end
-
-      def to_type(value, type)
-        return value.to_s if type == String && value.respond_to?(:to_s)
-        return value.to_h if type == Hash && value.respond_to?(:to_h)
-        return value.to_i if type == Integer && value.respond_to?(:to_i)
-        return value.to_sym if type == Symbol && value.respond_to?(:to_sym)
-        value
+        hash.each_with_object({}) { |(key, val), h| h[key.to_sym] = val }
       end
     end
     extend Methods
   end
+end
 
-  class ::Object
-    SOURCE_MODE_SYMBOLIZE_KEYS = :symbolize_keys
-    SOURCE_MODE_DEFAULT = false
+class Object
+  SOURCE_MODE_SYMBOLIZE_KEYS = :symbolize_keys
+  SOURCE_MODE_DEFAULT = false
 
-    def to_source(mode = SOURCE_MODE_DEFAULT)
-      self.to_s
+  def to_source(_mode = SOURCE_MODE_DEFAULT)
+    to_s
+  end
+end
+
+class Hash
+  def to_source(mode = SOURCE_MODE_DEFAULT)
+    items = each_with_object([]) do |(key, value), i|
+      key = key.to_sym if mode == SOURCE_MODE_SYMBOLIZE_KEYS
+      i.push "#{key.to_source(mode)} => #{value.to_source(mode)}"
     end
+    "{#{items.join(', ')}}"
   end
 
-  class ::Hash
-    def to_source(mode = SOURCE_MODE_DEFAULT)
-      items = []
-      each do |key, value|
-        key = key.to_sym if mode == SOURCE_MODE_SYMBOLIZE_KEYS
-        items.push "#{key.to_source(mode)} => #{value.to_source(mode)}"
-      end
-      "{#{items.join(', ')}}"
-    end
-
-    def delete_keys_recursive(keys)
-      self.inject({}) do |h,(k,v)|
-        next h if keys.include?(k)
-        v = v.delete_keys_recursive(keys) if v.is_a?(::Hash)
-        h[k] = v
-        h
-      end
+  def delete_keys_recursive(keys)
+    each_with_object({}) do |(k, v), h|
+      next h if keys.include?(k)
+      v = v.delete_keys_recursive(keys) if v.is_a?(::Hash)
+      h[k] = v
+      h
     end
   end
+end
 
-  class ::String
-    def to_source(mode = SOURCE_MODE_DEFAULT)
-      "'#{self.to_s}'"
-    end
+class String
+  def to_source(_mode = SOURCE_MODE_DEFAULT)
+    "'#{self}'"
   end
+end
 
-  class ::Symbol
-    def to_source(mode = SOURCE_MODE_DEFAULT)
-      ":#{self.to_s}"
-    end
+class Symbol
+  def to_source(_mode = SOURCE_MODE_DEFAULT)
+    ":#{self}"
   end
+end
 
-  class ::Array
-    def to_source(mode = SOURCE_MODE_DEFAULT)
-      "[#{map{|i| i.to_source(mode)}.join(', ')}]"
-    end
+class Array
+  def to_source(mode = SOURCE_MODE_DEFAULT)
+    "[#{map { |i| i.to_source(mode) }.join(', ')}]"
   end
 end

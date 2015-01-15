@@ -14,7 +14,7 @@ node['chef_eye']['applications'].each do |name, options|
   type = options.delete('type')
   cookbook = options.delete('cookbook') || 'chef_eye'
   if type == 'local'
-    #fetch local params
+    # fetch local params
     eye_home = options.delete('eye_home')
     eye_home = options['working_dir'] unless eye_home
     eye_config = options.delete('eye_config') || {}
@@ -37,7 +37,7 @@ node['chef_eye']['applications'].each do |name, options|
       group group
       cookbook cookbook
       config options
-      notifies  :reload, "service[eye_#{owner}]"
+      notifies :reload, "service[eye_#{owner}]"
     end
   end
 end
