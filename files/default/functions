@@ -4,6 +4,9 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 CLEAR='\033[0m'
 
+#EYE_BIN='/usr/local/bin/eye'
+#RUN_USER='deploy'
+
 eye_log() {
   echo "`date`:$RUN_USER: $1 " >> $LOG_FILE
 }
@@ -11,122 +14,129 @@ eye_log() {
 is_rvm() {
   if [ "$USER" = "$RUN_USER" ];
   then
-    bash -l -c "type rvm | cat | head -1 | grep -q '^rvm is a function$'" > /dev/null 2>&1
+    bash -l -c "type rvm | cat | grep -q '^rvm is a function$'" > /dev/null 2>&1
   else
     su $RUN_USER -l -c "type rvm | cat | head -1 | grep -q '^rvm is a function$'" > /dev/null 2>&1
   fi
-  return $?
 }
 
 run_as() {
   if [ "$USER" = "$RUN_USER" ]; then
-    $1
+    bash -l -c "$1"
   else
     su $RUN_USER -l -c "$1"
   fi
-  return $?
 }
 
 execute() {
   if is_rvm;
   then
-    CMD="rvm system do $EYE_BIN $1 $2"
+    CMD="rvm system do ${EYE_BIN} $@"
   else
-    CMD="$EYE_BIN $1 $2"
+    CMD="${EYE_BIN} $@"
   fi
   run_as "$CMD"
-  return $?
 }
 
 status() {
-   echo "Info:"
-   echo ""
-   execute info $MASK
-   echo ""
-   if [ $1 ]; then
-      echo "Xinfo:"
-      echo ""
+   echo -e "Info:\n"
+   execute info $1
+   if [ $2 ]; then
+      echo -e "Xinfo:\n"
       execute xinfo
-      echo ""
-      echo "Config:"
-      echo ""
+      echo -e "Config:\n"
       execute xinfo -c
    fi
 }
 
 start() {
-  execute load #run eye daemon
-  reload #reload config
+  execute load
 }
 
 stop() {
-   execute quit
-}
-
-check_all() {
-  CHECK=0
-  for CONFIG_FILE in `ls -1 $CONFIG_DIR`
-  do
-    if check $CONFIG_FILE; then
-      echo -e  "Check $CONFIG_FILE [ ${GREEN}OK${CLEAR} ]"
-    else
-      CHECK=1
-      echo -e "Check $CONFIG_FILE [ ${RED}FAIL${CLEAR} ]"
-      echo "  $OUTPUT"
-    fi
-  done
-  return $CHECK
-}
-
-check_one() {
-    if check $1; then
-      echo -e "Check $CONFIG_FILE [ ${GREEN}OK${CLEAR} ]"
-    else
-      echo -e "Check $CONFIG_FILE [ ${RED}FAIL${CLEAR} ]"
-      echo "  $OUTPUT"
-    fi
-}
-
-load_config() {
-    if check $CONFIG_FILE; then
-        RES=$(execute load "$CONFIG_FILE" 2>&1)
-        if [ "$?" -eq "0" ];
-        then
-            echo -e "Load $CONFIG_FILE  [ ${GREEN}OK${CLEAR} ]"
-        else
-            eye_log "$RES"
-            echo -e "Load $CONFIG_FILE  [ ${RED}FAIL${CLEAR} ]"
-        fi
-    else
-      echo -e "Check $CONFIG_FILE [ ${RED}FAIL${CLEAR} ]"
-      echo -e "  $OUTPUT"
-    fi
+   local opts=''
+   if [ $1 ]; then
+    opts='--stop-all'
+   fi
+   execute quit ${opts}
 }
 
 check() {
-    CONFIG_FILE=$(realpath "$CONFIG_DIR/$1")
-    OUTPUT=$(execute check $CONFIG_FILE 2>&1)
-    RESULT=$?
-    return $RESULT
+  execute check $1
 }
 
 explain() {
-    CONFIG_FILE=$(realpath "$CONFIG_DIR/$1")
-    execute explain $CONFIG_FILE
+  execute explain $1
 }
 
-reload() {
-  if [ ! -z $1 ]; then
-    CONFIG_FILE="$1.eye"
-    load_config
+expand_path() {
+  realpath "${CONFIG_DIR}/$1"
+}
+
+check_all() {
+  local check=0
+  local explain=$1
+  local trace=$2
+  local config_file
+  local output
+  for config_file in `ls -1 $CONFIG_DIR`
+  do
+    if ! check_file $(expand_path ${config_file}) ${explain} ${trace}; then
+      check=0
+    fi
+  done
+  return ${check}
+}
+
+check_file() {
+  local config_file=$1
+  local explain=$2
+  local trace=$3
+  local output
+  if [ ! -z $explain ];then
+    output=$(explain ${config_file})
   else
-      eye_log $(execute delete all 2>&1)
-      CONFIG_COUNT=$(ls -1 $CONFIG_DIR | wc -l);
-      if [ $CONFIG_COUNT \> 0 ]; then
-         for CONFIG_FILE in `ls -1 $CONFIG_DIR`
-         do
-          load_config
-         done
-      fi
+    output=$(check ${config_file})
+  fi
+
+  if [ "$?" -eq "0" ]; then
+    echo -e "Check ${config_file} [ ${GREEN}OK${CLEAR} ]"
+    if [ "$trace" = true ] && [ "$explain" = true ]; then
+      echo -e $output
+    fi
+    return 0
+  else
+    echo -e "Check ${config_file} [ ${RED}FAIL${CLEAR} ]"
+    if [ "$trace" = true ]; then
+      echo -e "$output"
+    fi
+    return 1
+  fi
+}
+
+load_file() {
+  local config_file=$1
+  local output=$(execute load ${config_file} 2>&1)
+  if [ "$?" -eq "0" ];
+  then
+      echo -e "Load ${config_file} [ ${GREEN}OK${CLEAR} ]"
+  else
+      eye_log "$output"
+      echo -e "Load ${config_file} [ ${RED}FAIL${CLEAR} ]"
+  fi
+}
+
+reload_all() {
+  if check_all;  then
+    local config_file
+    local config_count
+    eye_log $(execute delete all 2>&1)
+    config_count=$(ls -1 ${CONFIG_DIR} | wc -l);
+    if [ ${config_count} \> 0 ]; then
+       for config_file in `ls -1 ${CONFIG_DIR}`
+       do
+         load_file $(expand_path ${config_file})
+       done
+    fi
   fi
 }

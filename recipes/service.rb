@@ -7,6 +7,7 @@
 # All rights reserved - Do Not Redistribute
 #
 
+package 'realpath'
 directory '/etc/eye' do
   owner 'root'
   group 'root'
@@ -57,9 +58,8 @@ EyeCookbook::Utils.services(node).each do |user_name, config|
     owner 'root'
     group 'root'
     mode '0755'
-
     variables(
-      node: node,
+      eye_bin: node['chef_eye']['eye_bin'],
       user: user_name,
       service_name: service_name,
       config_dir: config_dir,
@@ -70,5 +70,6 @@ EyeCookbook::Utils.services(node).each do |user_name, config|
   #create service pr user
   service service_name do
     supports :status => true, :restart => true, :start => true, :reload => true
+    action :enable
   end
 end

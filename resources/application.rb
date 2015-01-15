@@ -1,6 +1,3 @@
-require 'eye'
-require 'eye/utils/mini_active_support'
-
 actions :configure, :delete
 default_action :configure
 
@@ -9,7 +6,6 @@ attribute :group, :kind_of => [String]
 attribute :cookbook, :kind_of => [String], default: 'chef_eye'
 attribute :helper, :kind_of => [TrueClass,FalseClass], default: true
 attribute :helper_prefix, :kind_of => [String, NilClass], default: nil
-
 
 def config(config = nil, &block )
   opts = nil

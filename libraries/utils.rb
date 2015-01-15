@@ -8,7 +8,7 @@ module EyeCookbook
                    services.to_hash
                  end
       node['chef_eye']['applications'].each do |_, options|
-        services[options['owner']] = {} unless services[options['owner']]
+        services[options['owner']] = {} if options['type'] != 'local' && !services[options['owner']]
       end
       services
     end

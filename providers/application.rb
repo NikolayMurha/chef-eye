@@ -11,7 +11,8 @@ action :configure do
     mode '0600'
     helpers ::EyeCookbook::ConfigRender::Methods
     variables(
-      resource: new_resource
+      name: new_resource.name,
+      application_config: new_resource.config.config
     )
   end
 
@@ -24,9 +25,10 @@ action :configure do
       group new_resource.group
       mode '0744'
       variables(
-        resource: new_resource,
-        log_file: ::File.join("/var/log/eye", new_resource.owner, ""),
-        node: node
+        application_name: new_resource.name,
+        eye_bin: node['chef_eye']['eye_bin'],
+        user: new_resource.owner,
+        log_file: ::File.join('/var/log/eye', new_resource.owner, 'eye.log')
       )
     end
   end
