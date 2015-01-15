@@ -265,7 +265,7 @@ Configuration for application writes to Eyefile.
 
 ### Helpers
 
-`chef_eye_application` resource have `helper` (String) and `helper_prefix` (String, default: owner name) attributes. If helper is true, resource will generate `/usr/local/sbin/<prefix>_<application_name>` executable scripts. By default for `my_app` helper is `/usr/local/sbin/vagrant_my_app`. This script run all command only for `my_app` namespace. `chef_eye_application_local` have helper always. For `my_app` this helper will be named like  `/usr/local/sbin/leye_my_app`
+`chef_eye_application` resource have `helper` (String) and `helper_prefix` (String, default: owner name) attributes. If helper is true, resource will generate `/usr/local/sbin/<prefix>_<application_name>` executable scripts. By default for `my_app` helper is `/usr/local/sbin/vagrant_my_app`. This script run all command only for `my_app` namespace. `chef_eye_application_local` have helper too. For `my_app` this helper will be named like  `/usr/local/sbin/leye_my_app` but it link to leye wrapper from &lt;eye_home&gt;/leye
 
 ## License and Authors
 
