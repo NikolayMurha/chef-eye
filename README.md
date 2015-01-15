@@ -195,6 +195,18 @@ Application used local eye version have additional attributes.
 
 ### chef_eye_application
 
+#### Attributes:
+
+|  Name       |  Type  | Description  |  Default Value |
+|-------------|--------|--------------|----------------|
+|  owner      | String | Username. This is required attribute |    None, *required*    |
+|  config     | Hash or Block | Application configuration, see example    |    None, *required*  |
+|  group      | String | Group    |     |
+|  cookbook   | String | Cookbook name for searching templates    | "chef_eye"    |
+|  helper   | TrueClass,FalseClass | This flag enable creation of helper script     | true    |
+|  helper_prefix   | String, NilClass | Prefix of helper script    | nil    |
+
+
 Cookbook provide `chef_eye_application` resource. This is a main resource for generate eye configuration.
 
     chef_eye_application 'name_of_my_app' do
@@ -259,15 +271,24 @@ or as hash
 
 ### chef_eye_application_local
 
-This lwrp looks like chef_eye_application but have additional attributes:
+This lwrp generate config for leye and create init.d service for local eye daemon.
+Configuration for application writes to Eyefile.
 
-  |  Name       |  Type  | Description  |  Default Value |
-  |-------------|--------|--------------|----------------|
-  |  eye_home   |        |              |                |
-  | eye_file    |        |              |                |
-  |  eye_pid    |        |              |                |
-  |  eye_socket |        |              |                |
-  |  log_file   |        |              |                |
+#### Attributes:
+
+
+|  Name       |  Type  | Description  |  Default Value |
+|-------------|--------|--------------|----------------|
+|  owner      | String | Username. This is required attribute |    None, *required*    |
+|  config     | Hash or Block | Application configuration, see example    |    None, *required*  |
+|  group      | String | Group    |     |
+|  cookbook   | String | Cookbook name for searching templates    | "chef_eye"    |
+|  eye_config     | Hash or Block | leye daemon configuration     |    nil  |
+|  eye_home   | String |               |  woring_dir              |
+|  eye_file   | String |  Name or path to Eyefile | "Eyefile"                |
+|  eye_pid    | String |  Name or path to pidfile  | "pid"               |
+|  eye_socket | String |  Name or path to eye socket | "sock"                |
+|  log_file   | String |  Relative or absolute path to logfile | "/var/log/eye/**owner**/eye.log" |
 
 
 ### Helper
