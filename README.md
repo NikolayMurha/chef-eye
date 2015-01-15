@@ -57,17 +57,18 @@ Include `chef_eye` in your node's `run_list`:
 }
 ```
 
-### Ruby
+### chef_eye::ruby
 
 Cookbook used system ruby and try to install `ruby`, `ruby-dev` packages if `node['chef_eye']['install_ruby']` set to `true`
 If  you want to use custom system ruby, you need set `node['chef_eye']['install_ruby']` to `false` and install custom ruby before
 before this cookbook. For example, if you want to use `uid` and `gid` [application options](https://github.com/kostya/eye/issues/50),
 you need install ruby 2.0.0 as system ruby. Its installation is your concern.
 
-##Service
+## chef_eye::service
 
-Services named by `eye_` prefix and username. For example, service for user vagrant, well be named as `eye_vagrant`.
-service for user root as `eye_root`, etc.
+This recipe generate service for eye daemons per users
+
+Services named by `eye_` prefix and username. For example, service for user vagrant, well be named as `eye_vagrant`, service for user root as `eye_root`, etc.
 
 If you need to reload service for user `vagrant`, you can use
 
@@ -100,8 +101,9 @@ if you want to configure service fore some user, you can setup it
       }
     }
 
-### Configuration
+### chef_eye::applications
 
+This service generate `chef_eye_application` or `chef_eye_application_local` LWRP's using `node['chef_eye']['applications']` attributes. 
 You can use any valid eye [options](https://github.com/kostya/eye/tree/master/examples). For example:
 
     default['chef_eye']['applications']['my_app'] = {
