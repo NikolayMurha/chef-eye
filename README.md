@@ -9,44 +9,15 @@ Cookbook for setup [eye](https://github.com/kostya/eye) service and applications
 
 ## Attributes
 
-<table>
-  <tr>
-    <th>Key</th>
-    <th>Type</th>
-    <th>Description</th>
-    <th>Default</th>
-  </tr>
-  <tr>
-      <td><tt>['chef_eye']['eye_bin']</tt></td>
-      <td>String</td>
-      <td>Path to eye executable file</td>
-      <td><tt>/usr/local/bin/leye</tt></td>
-    </tr>
-  <tr>
-      <td><tt>['chef_eye']['leye_bin']</tt></td>
-      <td>String</td>
-      <td>Path to local eye executable file</td>
-      <td><tt>/usr/local/bin/leye</tt></td>
-    </tr>
-  <tr>
-    <td><tt>['chef_eye']['services']</tt></td>
-    <td>Hash or Array</td>
-    <td>Array of users or Hash with users as keys and service options as value</td>
-    <td><tt>['root']</tt></td>
-  </tr>
-  <tr>
-    <td><tt>['chef_eye']['applications']</tt></td>
-    <td>Hash</td>
-    <td>Applications configurations</td>
-    <td><tt>{}</tt></td>
-  </tr>
-  <tr>
-    <td><tt>['chef_eye']['install_ruby']</tt></td>
-    <td>Boolean</td>
-    <td>Try to install ruby packages `ruby`, `ruby-dev`</td>
-    <td><tt>true</tt></td>
-  </tr>
-</table>
+
+| Key | Type | Description | Default |
+|-----|------|-------------|---------|
+| chef_eye.eye_bin | String  |  Path to eye executable file | /usr/local/bin/eye |
+| chef_eye.leye_bin | String  |  Path to local eye executable file | /usr/local/bin/leye |
+| chef_eye.services | Hash or Array  |  Array of users or Hash with users as keys and service options as value | ['root'] | 
+| chef_eye.applications | Hash  | Applications configurations | {} | 
+| chef_eye.install_ruby | Boolean  | Try to install ruby packages `ruby`, `ruby-dev`. If you want to install ruby using another way, you should set this value to `false` | true | 
+
 
 ## Usage
 
