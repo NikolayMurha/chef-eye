@@ -9,8 +9,8 @@ attribute :cookbook, kind_of: [String], default: 'chef_eye'
 attribute :log_file, kind_of: [String]
 attribute :eye_home, kind_of: [String]
 attribute :eye_file, kind_of: [String], default: 'Eyefile'
-attribute :eye_pid, kind_of: [String]
-attribute :eye_socket, kind_of: [String]
+attribute :eye_pid, kind_of: [String], default: 'pid'
+attribute :eye_socket, kind_of: [String], default: 'sock'
 
 def config(config = nil, &block )
   opts = nil

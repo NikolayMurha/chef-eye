@@ -18,8 +18,8 @@ node['chef_eye']['applications'].each do |name, options|
     eye_home = options.delete('eye_home')
     eye_home = options['working_dir'] unless eye_home
     eye_config = options.delete('eye_config') || {}
-    eye_pid = options.delete('eye_pid')
-    eye_socket = options.delete('eye_socket')
+    eye_pid = options.delete('eye_pid') || 'pid'
+    eye_socket = options.delete('eye_socket') || 'sock'
 
     chef_eye_application_local name do
       owner owner
