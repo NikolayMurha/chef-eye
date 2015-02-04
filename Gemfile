@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 
 gem 'berkshelf'
 gem 'stove'
+gem 'eye'
 group :test do
   gem 'foodcritic', '~> 4.0'
   gem 'rubocop', '~> 0.0'

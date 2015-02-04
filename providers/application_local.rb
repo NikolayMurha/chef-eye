@@ -2,6 +2,8 @@
 require 'pathname'
 use_inline_resources
 
+
+
 action :configure do
   log_file = Pathname.new(new_resource.log_file || "/var/log/eye/#{new_resource.owner}/eye.log")
   log_file = ::File.join(new_resource.eye_home, log_file) if log_file.relative?
@@ -17,7 +19,6 @@ action :configure do
       action :create
     end
   end
-
   # Main configuration
   template eye_file do
     source 'eyefile.erb'
@@ -31,7 +32,9 @@ action :configure do
       application_config: new_resource.config.config,
       eye_config: new_resource.eye_config.config
     )
+    notifies :reload, service_resource
   end
+
 
   # leye wrapper
   template eye_bin do
@@ -54,9 +57,9 @@ action :configure do
   end
 
   # Service
-  service_name = "leye_#{new_resource.name}"
   template "/etc/init.d/#{service_name}" do
     source 'init.d.local.bash.erb'
+    cookbook new_resource.cookbook
     owner 'root'
     group 'root'
     mode '0755'
@@ -69,21 +72,31 @@ action :configure do
       name: new_resource.name,
       log_file: log_file
     )
-  end
 
-  service service_name do
-    supports status: true, restart: true, start: true, reload: true
-    action :enable
-    subscribes :reload, "template[#{eye_file}]"
+    notifies :enable, service_resource
   end
+end
+
+action :restart do
+  service_resource.run_action(:restart)
+end
+
+action :stop do
+  service_resource.run_action(:stop)
+end
+
+action :start do
+  service_resource.run_action(:start)
+end
+
+action :reload do
+  service_resource.run_action(:reload)
 end
 
 action :delete do
   service_name = "leye_#{new_resource.name}"
   helper_name = "#{new_resource.helper_prefix || 'leye'}_#{new_resource.name}"
-  service service_name do
-    action :disable
-  end
+  service_resource.run_action(:disable)
 
   file "/etc/init.d/#{service_name}" do
     action :delete
@@ -91,5 +104,16 @@ action :delete do
 
   file "/usr/local/sbin/#{helper_name}" do
     action :delete
+  end
+end
+
+def service_name
+  "leye_#{new_resource.name}"
+end
+
+def service_resource
+  @service_resource ||= service service_name do
+    supports status: true, restart: true, start: true, reload: true
+    action :nothing
   end
 end

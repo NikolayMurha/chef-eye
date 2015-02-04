@@ -14,9 +14,9 @@ Cookbook for setup [eye](https://github.com/kostya/eye) service and applications
 |-----|------|-------------|---------|
 | chef_eye.eye_bin | String  |  Path to eye executable file | /usr/local/bin/eye |
 | chef_eye.leye_bin | String  |  Path to local eye executable file | /usr/local/bin/leye |
-| chef_eye.services | Hash or Array  |  Array of users or Hash with users as keys and service options as value | ['root'] | 
-| chef_eye.applications | Hash  | Applications configurations | {} | 
-| chef_eye.install_ruby | Boolean  | Try to install ruby packages `ruby`, `ruby-dev`. If you want to install ruby using another way, you should set this value to `false` | true | 
+| chef_eye.services | Hash or Array  |  Array of users or Hash with users as keys and service options as value | ['root'] |
+| chef_eye.applications | Hash  | Applications configurations | {} |
+| chef_eye.install_ruby | Boolean  | Try to install ruby packages `ruby`, `ruby-dev`. If you want to install ruby using another way, you should set this value to `false` | true |
 
 
 ## Usage
@@ -103,7 +103,7 @@ if you want to configure service fore some user, you can setup it
 
 ### chef_eye::applications
 
-This service generate `chef_eye_application` or `chef_eye_application_local` LWRP's using `node['chef_eye']['applications']` attributes. 
+This service generate `chef_eye_application` or `chef_eye_application_local` LWRP's using `node['chef_eye']['applications']` attributes.
 You can use any valid eye [options](https://github.com/kostya/eye/tree/master/examples). For example:
 
     default['chef_eye']['applications']['my_app'] = {
@@ -127,7 +127,7 @@ You can use any valid eye [options](https://github.com/kostya/eye/tree/master/ex
           daemonize:  true,
           pid_file: 'puma.pid',
           stdall: 'puma.log',
-          start_command: 'bundle exec puma --port 33280 --environment production Config.ru',
+          start_command: 'bundle exec unicorn --port 33280 --environment production Config.ru',
           stop_signals: ['TERM', 5, 'KILL']
         },
         resque: {
@@ -247,7 +247,6 @@ This lwrp generate config for leye and create init.d service for local eye daemo
 Configuration for application writes to Eyefile.
 
 #### Attributes:
-
 
 |  Name       |  Type  | Description  |  Default Value |
 |-------------|--------|--------------|----------------|

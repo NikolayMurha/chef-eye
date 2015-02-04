@@ -1,4 +1,4 @@
-actions :configure, :delete
+actions :configure, :delete, :start, :restart, :stop
 default_action :configure
 
 attribute :owner, kind_of: [String]
@@ -15,18 +15,19 @@ attribute :eye_socket, kind_of: [String], default: 'sock'
 def config(config = nil, &block)
   opts = nil
   if config
-    opts = Eye::Dsl::ApplicationOpts.new name
+    opts = Eye::Dsl::ApplicationOpts.new(name)
     code = ::EyeCookbook::ConfigRender.render_config(config)
     opts.instance_eval(code)
   elsif block
-    opts = Eye::Dsl::ApplicationOpts.new name
+    opts = Eye::Dsl::ApplicationOpts.new(name)
     opts.instance_eval(&block)
   end
 
   set_or_return(
     :config,
     opts,
-    kind_of: [Object]
+    kind_of: [Object],
+    default: Eye::Dsl::ApplicationOpts.new(name)
   )
 end
 
@@ -44,6 +45,7 @@ def eye_config(config = nil, &block)
   set_or_return(
     :eye_config,
     opts,
-    kind_of: [Object]
+    kind_of: [Object],
+    default: Eye::Dsl::ConfigOpts.new
   )
 end
