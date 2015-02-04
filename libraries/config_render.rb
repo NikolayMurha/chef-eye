@@ -1,4 +1,3 @@
-
 # TODO: Think how to refactor this shit
 module EyeCookbook
   module ConfigRender
@@ -31,6 +30,10 @@ module EyeCookbook
 
       def render_config(config)
         render_hash(config).join("\n")
+      end
+
+      def render_logger(args)
+        "logger(#{args.is_a?(Array) ? args.map(&:to_source).join(', ') : args.to_source })"
       end
 
       def render_hash(variable)
