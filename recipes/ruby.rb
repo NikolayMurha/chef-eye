@@ -1,6 +1,6 @@
 if node['chef_eye']['install_ruby']
-  package 'ruby'
-  package 'ruby-dev'
+  package 'ruby1.9'
+  package 'ruby1.9-dev'
 end
 
 gem_package 'eye' do
