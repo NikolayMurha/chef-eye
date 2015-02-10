@@ -14,31 +14,27 @@
 
 EYE_BIN="/usr/bin/env <%= @eye_bin %>"
 RUN_USER=<%= @user || 'root' %>
+CONFIG_DIR=<%= @config_dir || @eye_home || 'root' %>
 LOG_FILE=<%= @log_file || '/var/log/eye.log' %>
 APPLICATION=<%=@name %>
 #https://github.com/kostya/eye/wiki/What-is-loader_eye-and-leye
 
 source /etc/eye/functions
 
-reload() {
-  load_file <%= @eye_file %>
-}
-
 case "$1" in
   start)
-    start
-    reload
+    load
     ;;
   stop)
-    stop true
+    quit
     ;;
   restart)
-    stop
-    start
-    reload
+    quit
+    load
+    load_all
     ;;
   reload)
-    reload
+    load_all
     ;;
   status)
     status

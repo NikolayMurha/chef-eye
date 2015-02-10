@@ -74,7 +74,57 @@ Vagrant.configure('2') do |config|
   config.vm.provision :chef_solo do |chef|
     chef.log_level = :debug
     chef.json = {
+      "chef_eye" => {
+        "applications" => {
+          "tmm2" => {
+            "owner" => 'vagrant',
+            "group" => 'vagrant',
+            "type" => "local",
+            "eye_home" => "/var/www/tmm2/shared/.eye",
+            "eye_config" => {
+              "logger" => "/var/www/tmm2/shared/log/eye.log"
+            },
+            "working_dir" => "/var/www/tmm2/current",
+            "env" => {
+              "RAILS_ENV" => "development"
+            },
+            "process" => {
+              "unicorn" => {
+                "pid_file" => "/var/www/tmm2/shared/tmp/pids/unicorn.pid",
+                "stdall" => "/var/www/tmm2/shared/log/eye.log",
+                "start_command" => "rvm 2.0.0@rails-base do bundle exec unicorn_rails -D -E development -c config/unicorn.rb",
+                "stop_signals" => [
+                  "TERM",
+                  5,
+                  "KILL"
+                ],
+                "start_timeout" => 100,
+                "restart_grace" => 30,
+                "restart_command" => "kill -USR2 {PID}",
+                "monitor_children" => {
+                  "stop_command" => "kill -QUIT {PID}",
+                  "check" => {
+                    "cpu" => {
+                      "every" => 30,
+                      "below" => 80,
+                      "times" => 30
+                    },
+                    "memory" => {
+                      "every" => 30,
+                      "below" => 157286400,
+                      "times" => [
+                        3,
+                        5
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
 
+        }
+      }
     }
     chef.run_list = %w(
       recipe[chef_eye]

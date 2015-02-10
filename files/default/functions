@@ -1,8 +1,8 @@
 #!/bin/bash
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-CLEAR='\033[0m'
+RED=`tput setaf 1 2>/dev/null`
+GREEN=`tput setaf 2 2>/dev/null`
+CLEAR=`tput sgr0 2>/dev/null`
 
 #EYE_BIN='/usr/local/bin/eye'
 #RUN_USER='deploy'
@@ -29,6 +29,7 @@ run_as() {
 }
 
 execute() {
+  local res
   if is_rvm;
   then
     CMD="rvm system do ${EYE_BIN} $@"
@@ -49,16 +50,20 @@ status() {
    fi
 }
 
-start() {
+load() {
   execute load
 }
 
-stop() {
+quit() {
    local opts=''
    if [ $1 ]; then
     opts='--stop-all'
    fi
    execute quit ${opts}
+}
+
+is_runned() {
+  execute oinfocheck_all
 }
 
 check() {
@@ -79,9 +84,9 @@ check_all() {
   local trace=$2
   local config_file
   local output
-  for config_file in `ls -1 $CONFIG_DIR`
+  for config_file in `find ${CONFIG_DIR} -type f  -name '*.eye'`
   do
-    if ! check_file $(expand_path ${config_file}) ${explain} ${trace}; then
+    if ! check_file ${config_file} ${explain} ${trace}; then
       check=0
     fi
   done
@@ -126,16 +131,16 @@ load_file() {
   fi
 }
 
-reload_all() {
+load_all() {
   if check_all;  then
     local config_file
     local config_count
     eye_log $(execute delete all 2>&1)
-    config_count=$(ls -1 ${CONFIG_DIR} | wc -l);
+    config_count=$(find ${CONFIG_DIR} -type f  -name '*.eye' | wc -l);
     if [ ${config_count} \> 0 ]; then
-       for config_file in `ls -1 ${CONFIG_DIR}`
+       for config_file in `find ${CONFIG_DIR} -type f  -name '*.eye'`
        do
-         load_file $(expand_path ${config_file})
+         load_file ${config_file}
        done
     fi
   fi

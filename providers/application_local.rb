@@ -2,13 +2,14 @@
 require 'pathname'
 use_inline_resources
 
-
-
 action :configure do
-  log_file = Pathname.new(new_resource.log_file || "/var/log/eye/#{new_resource.owner}/eye.log")
+  log_file = new_resource.eye_config.config[:logger] ? new_resource.eye_config.config[:logger].first : 'eye.log'
+  log_file = Pathname.new(log_file)
   log_file = ::File.join(new_resource.eye_home, log_file) if log_file.relative?
+
   log_dir = ::File.dirname(log_file)
   eye_file = ::File.join(new_resource.eye_home, new_resource.eye_file)
+  config_dir = new_resource.config_dir || new_resource.eye_home
   eye_bin = ::File.join(new_resource.eye_home, 'leye')
 
   [new_resource.eye_home, log_dir].each do |dir|
@@ -19,9 +20,10 @@ action :configure do
       action :create
     end
   end
-  # Main configuration
+
+  # Service configuration
   template eye_file do
-    source 'eyefile.erb'
+    source 'config.eye.erb'
     cookbook new_resource.cookbook
     owner new_resource.owner
     group new_resource.group
@@ -29,12 +31,18 @@ action :configure do
     helpers ::EyeCookbook::ConfigRender::Methods
     variables(
       name: new_resource.name,
-      application_config: new_resource.config.config,
-      eye_config: new_resource.eye_config.config
+      config: new_resource.eye_config.config
     )
     notifies :reload, service_resource
   end
 
+  chef_eye_application_config new_resource.name do
+    owner new_resource.owner
+    group new_resource.group
+    config new_resource.config
+    config_dir config_dir
+    notifies :reload, service_resource
+  end
 
   # leye wrapper
   template eye_bin do
@@ -52,13 +60,26 @@ action :configure do
     )
   end
 
-  link "/usr/local/sbin/leye_#{new_resource.name}" do
-    to eye_bin
+  # leye helper
+  helper_file = ::File.join('/usr/local/sbin', "leye_#{new_resource.name}")
+  template helper_file do
+    source 'helper.bash.erb'
+    cookbook new_resource.cookbook
+    owner new_resource.owner
+    group new_resource.group
+    mode '0744'
+    variables(
+      config_dir: config_dir,
+      # application_name: new_resource.name,
+      user: new_resource.owner,
+      eye_bin: eye_bin,
+      log_file: log_file
+    )
   end
 
   # Service
   template "/etc/init.d/#{service_name}" do
-    source 'init.d.local.bash.erb'
+    source 'init.d.bash.erb'
     cookbook new_resource.cookbook
     owner 'root'
     group 'root'
@@ -66,13 +87,12 @@ action :configure do
     variables(
       service_name: service_name,
       eye_bin: eye_bin,
-      eye_file: eye_file,
+      config_dir: config_dir,
       user: new_resource.owner,
       group: new_resource.group,
       name: new_resource.name,
       log_file: log_file
     )
-
     notifies :enable, service_resource
   end
 end

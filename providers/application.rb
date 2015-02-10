@@ -3,17 +3,12 @@ use_inline_resources
 
 action :configure do
   validate_name
-  template "/etc/eye/#{new_resource.owner}/#{new_resource.name}.eye" do
-    source 'application.eye.erb'
-    cookbook new_resource.cookbook
+  config_dir = ::File.join('/etc/eye', new_resource.owner)
+  chef_eye_application_config new_resource.name do
     owner new_resource.owner
     group new_resource.group
-    mode '0600'
-    helpers ::EyeCookbook::ConfigRender::Methods
-    variables(
-      name: new_resource.name,
-      application_config: new_resource.config.config
-    )
+    config_dir config_dir
+    config new_resource.config
   end
 
   if new_resource.helper
@@ -25,6 +20,7 @@ action :configure do
       group new_resource.group
       mode '0744'
       variables(
+        config_dir: config_dir,
         application_name: new_resource.name,
         eye_bin: node['chef_eye']['eye_bin'],
         user: new_resource.owner,

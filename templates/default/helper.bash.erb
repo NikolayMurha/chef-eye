@@ -9,6 +9,7 @@ CONFIG_DIR=<%= @config_dir || "/etc/eye/#{@user || 'root'}" %>
 RUN_USER=<%= @user || 'root' %>
 LOG_FILE=<%= @log_file || '/var/log/eye.log' %>
 APPLICATION=<%=@application_name %>
+COMMAND=$1
 COMMANDS=(break load delete history info match xinfo monitor restart reload signal start stop trace unmonitor user_command watch check status)
 source /etc/eye/functions
 
@@ -18,7 +19,7 @@ make_mask() {
   if [ ! -z "${APPLICATION}" ] && [ "${APPLICATION}" != "" ]; then
     mask="${APPLICATION}:"
   fi
-  if [ ! -z $1 ]; then
+  if [ ! -z $1 ] || [ "$COMMAND" == "trace" ]; then
     mask="${mask}$1"
   else
     mask="${mask}all"

@@ -22,19 +22,22 @@ source /etc/eye/functions
 
 case "$1" in
   start)
-    start
-    reload_all
+    load
+    load_all
     ;;
   stop)
-    stop true
+    quit
+    ;;
+  stop-all)
+    quit true
     ;;
   restart)
-    stop true
-    start
-    reload_all
+    quit
+    load
+    load_all
     ;;
   reload)
-    reload_all
+    load_all
     ;;
   status)
     status
@@ -55,7 +58,7 @@ case "$1" in
     check_all false true
     ;;
   *)
-    echo "Usage: $0 {start|stop|restart|status|full-status|check|explain|watch|break}"
+    echo "Usage: $0 {start|stop|stop-all|restart|status|full-status|check|explain|watch|break}"
     exit 1
     ;;
 esac
