@@ -61,7 +61,14 @@ action :configure do
   end
 
   # leye helper
+
   helper_file = ::File.join('/usr/local/sbin', "leye_#{new_resource.name}")
+  # backward compatibility
+  link helper_file  do
+    action :delete
+    only_if "test -L #{helper_file}"
+  end
+
   template helper_file do
     source 'helper.bash.erb'
     cookbook new_resource.cookbook
