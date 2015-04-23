@@ -11,12 +11,7 @@ module ChefEyeCookbook
             group new_resource.group
             mode new_resource.mode
             helpers ::ChefEyeCookbook::ConfigRender::Methods
-            variables({
-                name: new_resource.name,
-                config: new_resource.config.config,
-                config_dir: (new_resource.config_dir if new_resource.respond_to?(:config_dir)),
-                config_files: (new_resource.config_files if new_resource.respond_to?(:config_files))
-              })
+            variables(template_variables)
           end
         end
 
@@ -30,6 +25,10 @@ module ChefEyeCookbook
           file new_resource.path do
             action :touch
           end
+        end
+
+        def template_variables
+          { name: new_resource.name, config: new_resource.config.config }
         end
       end
     end

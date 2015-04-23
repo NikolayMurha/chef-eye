@@ -76,8 +76,8 @@ module ChefEyeCookbook
 
     def wait(timeout, &block)
       start_time = Time.now
-      end_time = start_time+timeout
-      while true
+      end_time = start_time + timeout
+      loop do
         return true if block.call
         raise 'Wait timeout!' if Time.now > end_time
         sleep 1
@@ -100,11 +100,11 @@ module ChefEyeCookbook
 
       def form_service_resource(service_resource)
         ChefEyeCookbook::EyeProcess.new(service_resource.type, service_resource.node,
-          owner: service_resource.owner,
-          group: service_resource.group,
-          eye_home: service_resource.eye_home,
-          eye_file: service_resource.eye_file
-        )
+                                        owner: service_resource.owner,
+                                        group: service_resource.group,
+                                        eye_home: service_resource.eye_home,
+                                        eye_file: service_resource.eye_file
+                                       )
       end
     end
   end

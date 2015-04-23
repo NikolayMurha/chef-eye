@@ -51,19 +51,18 @@ end
 action :stop do
   eye_send_command('stop')
   eye_process.wait_stop(new_resource.name)
-
 end
 
 action :restart do
   eye_send_command('restart')
 end
 
-def has_custom_config_dir?
+def custom_config_dir?
   new_resource.config_dir && new_resource.config_dir != @service_config['config_dir']
 end
 
 def config_file
-  if has_custom_config_dir?
+  if custom_config_dir?
     "#{::File.join(new_resource.config_dir, new_resource.name)}.eye"
   else
     "#{::File.join(@service_config['config_dir'], new_resource.name)}.eye"

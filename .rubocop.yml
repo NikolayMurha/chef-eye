@@ -29,5 +29,5 @@ WordArray:
 AccessorMethodName:
   Enabled: false
 Metrics/AbcSize:
-  Max: 25
+  Max: 50
 

@@ -1,5 +1,6 @@
 include ChefEyeCookbook::ConfigResource
 
+default_action :create
 def config(config = nil, &block)
   opts = nil
   if config.is_a?(Proc)

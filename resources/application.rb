@@ -10,7 +10,6 @@ attribute :service_provider, kind_of: [String], default: node['chef_eye']['servi
 attribute :eye_home, kind_of: [String]
 attribute :eye_file, kind_of: [String], default: 'Eyefile'
 
-
 def config(config = nil, &block)
   set_or_return(
     :config,
@@ -29,18 +28,17 @@ def eye_config(config = nil, &block)
   )
 end
 
-
-def _eye_home
+def eye_home_path
   return eye_home unless eye_file
-  _eye_file = Pathname.new(eye_file)
-  if !eye_home && _eye_file.absolute?
-    _eye_file.parent.to_s
+  eye_file_path = Pathname.new(eye_file)
+  if !eye_home && eye_file_path.absolute?
+    eye_file_path.parent.to_s
   else
     eye_home
   end
 end
 
-def _eye_file
+def eye_file_path
   if eye_home && eye_file && Pathname.new(eye_file).relative?
     ::File.join(eye_home, eye_file)
   else

@@ -8,6 +8,3 @@ end.run_action(:install)
 
 require 'eye'
 require 'eye/utils/mini_active_support'
-
-
-

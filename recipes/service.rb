@@ -47,5 +47,4 @@ ChefEyeCookbook::Utils.services(node).each do |user_name, config|
     cookbook config['cookbook'] || 'chef_eye'
     subscribes :reload, eye_file
   end
-
 end

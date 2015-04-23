@@ -11,15 +11,14 @@ def load_current_resource
     owner new_resource.owner
     group new_resource.group
     cookbook new_resource.cookbook
-    eye_home new_resource._eye_home
-    eye_file new_resource._eye_file
+    eye_home new_resource.eye_home_path
+    eye_file new_resource.eye_file_path
   end
   @eye_process = ChefEyeCookbook::EyeProcess.form_service_resource(@service_resource)
 end
 
 action :configure do
-
-  [new_resource._eye_home, _config_dir].compact.each do |dir|
+  [new_resource.eye_home_path, config_dir_path].compact.each do |dir|
     directory dir do
       recursive true
       owner new_resource.owner
@@ -28,9 +27,9 @@ action :configure do
     end
   end
 
-  application_config = "#{::File.join(_config_dir, new_resource.name)}.eye"
+  application_config = "#{::File.join(config_dir_path, new_resource.name)}.eye"
   # Eyefile
-  chef_eye_config new_resource._eye_file do
+  chef_eye_config new_resource.eye_file_path do
     cookbook new_resource.cookbook
     owner new_resource.owner
     group new_resource.group
@@ -54,14 +53,16 @@ end
 action :delete do
   run_action(:stop)
   service_resource.run_action(:destroy)
-  file "#{::File.join(_config_dir, new_resource.name)}.eye" do
+
+  file "#{::File.join(config_dir_path, new_resource.name)}.eye" do
     action :delete
-    only_if "test -f #{::File.join(_config_dir, new_resource.name)}.eye"
+    only_if "test -f #{::File.join(config_dir_path, new_resource.name)}.eye"
   end
 
-  file new_resource._eye_file do
+  file "eye_file_#{new_resource.name}" do
+    path new_resource.eye_file_path
     action :delete
-    only_if "test -f #{new_resource._eye_file}"
+    only_if "test -f #{new_resource.eye_file_path}"
   end
 end
 
@@ -79,17 +80,15 @@ action :restart do
 end
 
 def validate_resource!
-  if (!new_resource.eye_file || Pathname.new(new_resource.eye_file).relative?) && !new_resource.eye_home
-    raise 'eye_home or absolute path to Eyefile is required for local eye application!'
-  end
+  raise 'eye_home or absolute path to Eyefile is required for local eye application!' unless new_resource.eye_home || (new_resource.eye_file && Pathname.new(new_resource.eye_file).absolute?)
 end
 
 def eye_config
   eye_config = new_resource.eye_config
-  eye_config.merge!('logger' => ::File.join(new_resource._eye_home, 'log', 'eye.log')) unless eye_config['logger']
+  eye_config.merge!('logger' => ::File.join(new_resource.eye_home_path, 'log', 'eye.log')) unless eye_config['logger']
   eye_config
 end
 
-def _config_dir
-  @_config_dir ||= new_resource.config_dir || ::File.join(new_resource._eye_home, 'config')
+def config_dir_path
+  @config_dir_path ||= new_resource.config_dir || ::File.join(new_resource.eye_home_path, 'config')
 end
