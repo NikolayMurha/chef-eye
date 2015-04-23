@@ -1,6 +1,5 @@
-# TODO: Think how to refactor this shit
-unless defined?(EyeCookbook::ConfigRender)
-  module EyeCookbook
+unless defined?(ChefEyeCookbook::ConfigRender)
+  module ChefEyeCookbook
     module ConfigRender
       module Methods
         TYPED_FUNCTIONS = [:check, :trigger]
@@ -95,7 +94,7 @@ unless defined?(EyeCookbook::ConfigRender)
         end
 
         def symbolize_keys(hash)
-          hash.each_with_object({}) { |(key, val), h| h[key.to_sym] = val }
+          ChefEyeCookbook::Utils.symbolize_keys(hash)
         end
       end
       extend Methods

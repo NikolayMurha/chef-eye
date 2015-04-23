@@ -1,0 +1,23 @@
+description "Eye monitoring for <%=@service_name%>"
+start on (local-filesystems and runlevel [2345])
+stop on runlevel [016]
+expect fork
+respawn
+kill timeout 30
+
+setuid <%= @eye_process.owner %>
+setgid <%= @eye_process.group  %>
+<% @eye_process.environment.each do |n, v|%>
+env <%=n %>=<%=v %>
+<% end %>
+console log
+
+script
+  exec <%= @eye_process.eye_bin %> load <%=@eye_process.config_file if @eye_process.config_file %>
+end script
+
+pre-stop script
+  logger -is -t "$UPSTART_JOB" "Pre-Start: Wait 5 seconds before stop"
+  sleep 5
+  exec <%= @eye_process.eye_bin %> quit
+end script

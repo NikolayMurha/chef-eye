@@ -8,68 +8,44 @@
 #
 
 package 'realpath'
+
 directory '/etc/eye' do
   owner 'root'
   group 'root'
   action :create
+  mode '755'
 end
 
-cookbook_file 'functions' do
-  path '/etc/eye/functions'
-  action :create
-end
-
-# create service per users
-EyeCookbook::Utils.services(node).each do |user_name, config|
-  service_name = "eye_#{user_name}"
-  config_dir = "/etc/eye/#{user_name}"
-  log_dir = "/var/log/eye/#{user_name}"
-  log_file = ::File.join(log_dir, 'eye.log')
-  [config_dir, log_dir].each do |dir|
-    directory dir do
-      recursive true
-      owner user_name
-      group user_name
-      action :create
-    end
-  end
-
-  file log_file do
+ChefEyeCookbook::Utils.services(node).each do |user_name, config|
+  directory config['config_dir'] do
+    recursive true
     owner user_name
     group user_name
-    action :touch
+    action :create
   end
 
-  config = { logger: log_file }.merge(config || {})
-  # TODO: validate config
-  template "#{config_dir}/_config.eye" do
-    source 'config.eye.erb'
+  file config['config']['logger'] do
     owner user_name
     group user_name
-    mode '0600'
-    helpers ::EyeCookbook::ConfigRender::Methods
-    variables(
-      config: config
-    )
+    action :create
   end
 
-  template "/etc/init.d/#{service_name}" do
-    source 'init.d.bash.erb'
-    owner 'root'
-    group 'root'
-    mode '0755'
-    variables(
-      eye_bin: node['chef_eye']['eye_bin'],
-      user: user_name,
-      service_name: service_name,
-      config_dir: config_dir,
-      log_file: log_file
-    )
+  # main config
+  eye_file = chef_eye_config config['eye_file'] do
+    cookbook config['cookbook'] || 'chef_eye'
+    owner user_name
+    group user_name
+    config config['config']
+    config_dir config['config_dir']
   end
 
-  # create service pr user
-  service service_name do
-    supports status: true, restart: true, start: true, reload: true
-    action :enable
+  chef_eye_service config['service_name']do
+    owner user_name
+    group user_name
+    eye_file config['eye_file']
+    service_provider config.delete('service_provider') || 'upstart'
+    cookbook config['cookbook'] || 'chef_eye'
+    subscribes :reload, eye_file
   end
+
 end

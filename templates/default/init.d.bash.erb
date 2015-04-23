@@ -12,53 +12,60 @@
 # Short-Description: starts <%= @service_name %> by eye
 ### END INIT INFO
 
+EYE_BIN="/usr/bin/env <%= @eye_process.eye_bin %>"
+RUN_USER=<%= @eye_process.owner %>
 
-EYE_BIN=<%= @eye_bin %>
-CONFIG_DIR=<%= @config_dir %>
-RUN_USER=<%= @user || 'root' %>
-LOG_FILE=<%= @log_file || '/var/log/eye.log' %>
+<% @eye_process.environment.each do |n, v| %>
+export <%=n %>=<%=v %>
+<% end %>
 
-source /etc/eye/functions
+eye() {
+  local cmd
+  cmd="${EYE_BIN} $1"
+  if [ "$USER" != 'root' ] && [ "$USER" != "$RUN_USER" ]; then
+    if [ "$RUN_USER" == 'root' ] ; then
+     echo "You must be a root"
+    else
+     echo "You must be root or $RUN_USER"
+    fi
+    return 0
+  fi
+  if [ "$USER" == "$RUN_USER" ]; then
+    `$cmd`
+  else
+    su $RUN_USER -p -c "$cmd"
+  fi
+}
+
+start() {
+  eye load <%=@eye_process.config_file if @eye_process.config_file %>
+}
+
+stop() {
+  eye quit
+}
+
+status() {
+  eye xinfo
+}
 
 case "$1" in
   start)
-    load
-    load_all
+    start
     ;;
   stop)
-    quit
+    stop
     ;;
-  stop-all)
-    quit true
-    ;;
-  restart)
-    quit
-    load
-    load_all
-    ;;
-  reload)
-    load_all
+
+  reload|restart)
+    stop
+    start
     ;;
   status)
     status
     ;;
-  full-status)
-    status '' true
-    ;;
-  watch)
-    execute watch all
-    ;;
-  explain)
-    check_all true true
-    ;;
-  break)
-    execute break all
-    ;;
-  check)
-    check_all false true
-    ;;
   *)
-    echo "Usage: $0 {start|stop|stop-all|restart|status|full-status|check|explain|watch|break}"
+    echo "Usage: $0 {start|stop|restart|reload|status}"
     exit 1
     ;;
 esac

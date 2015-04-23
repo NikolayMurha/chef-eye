@@ -4,4 +4,4 @@ DEPENDENCIES
     metadata: true
 
 GRAPH
-  chef_eye (0.2.5)
+  chef_eye (1.0.0)

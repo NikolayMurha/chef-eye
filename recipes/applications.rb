@@ -1,46 +1,24 @@
-
-gem = chef_gem 'eye' do
-  version node['chef_eye']['version']
-end
-gem.run_action(:install)
-
-require 'eye'
-require 'eye/utils/mini_active_support'
+include_recipe 'chef_eye::service'
 
 node['chef_eye']['applications'].each do |name, options|
-  options = options.to_hash
-  owner = options.delete('owner') || 'root'
-  group = options.delete('group')
-  type = options.delete('type')
-  cookbook = options.delete('cookbook') || 'chef_eye'
+  name = options['name'] if options['name']
+  type = options['type']
+  service_config = ChefEyeCookbook::Utils.services(node)[options['owner']]
 
-  if type == 'local'
-    # fetch local params
-    eye_home = options.delete('eye_home')
-    eye_home = options['working_dir'] unless eye_home
-    eye_config = options.delete('eye_config') || {}
-    eye_pid = options.delete('eye_pid') || 'pid'
-    eye_socket = options.delete('eye_socket') || 'sock'
-    config_dir = options.delete('config_dir')
-
-    chef_eye_application_local name do
-      owner owner
-      group group
-      cookbook cookbook
-      config options
-      config_dir config_dir
-      eye_home eye_home
-      eye_config eye_config
-      eye_pid eye_pid
-      eye_socket eye_socket
-    end
-  else
-    chef_eye_application name do
-      owner owner
-      group group
-      cookbook cookbook
-      config options
-      notifies :reload, "service[eye_#{owner}]"
+  chef_eye_application name do
+    provider Chef::Provider::ChefEyeApplicationLocal if type == 'local'
+    owner options['owner']
+    group options['group'] || 'root'
+    cookbook options['cookbook'] || cookbook_name
+    config options['config']
+    config_dir options['config_dir']
+    if type != 'local' && service_config
+      notifies :restart, "chef_eye_service[#{service_config['service_name']}]"
+    else
+      service_provider options['service_provider'] || 'upstart'
+      eye_home options['eye_home']
+      eye_config options['eye_config']
+      eye_file options['eye_file']
     end
   end
 end

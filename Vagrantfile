@@ -5,7 +5,10 @@ Vagrant.configure('2') do |config|
   # All Vagrant configuration is done here. The most common configuration
   # options are documented and commented below. For a complete reference,
   # please see the online documentation at vagrantup.com.
-
+  config.trigger.before :reload, stdout: true do
+    puts "Remove 'synced_folders' file"
+    `rm .vagrant/machines/default/virtualbox/synced_folders`
+  end
   config.vm.hostname = 'chef-eye'
 
   # Every Vagrant virtual environment requires a box to build off of.
@@ -71,63 +74,12 @@ Vagrant.configure('2') do |config|
     v.cpus = 2
   end
 
-  config.vm.provision :chef_solo do |chef|
+  config.vm.provision :chef_zero do |chef|
     chef.log_level = :debug
     chef.json = {
-      "chef_eye" => {
-        "applications" => {
-          "tmm2" => {
-            "owner" => 'vagrant',
-            "group" => 'vagrant',
-            "type" => "local",
-            "eye_home" => "/var/www/tmm2/shared/.eye",
-            "eye_config" => {
-              "logger" => "/var/www/tmm2/shared/log/eye.log"
-            },
-            "working_dir" => "/var/www/tmm2/current",
-            "env" => {
-              "RAILS_ENV" => "development"
-            },
-            "process" => {
-              "unicorn" => {
-                "pid_file" => "/var/www/tmm2/shared/tmp/pids/unicorn.pid",
-                "stdall" => "/var/www/tmm2/shared/log/eye.log",
-                "start_command" => "rvm 2.0.0@rails-base do bundle exec unicorn_rails -D -E development -c config/unicorn.rb",
-                "stop_signals" => [
-                  "TERM",
-                  5,
-                  "KILL"
-                ],
-                "start_timeout" => 100,
-                "restart_grace" => 30,
-                "restart_command" => "kill -USR2 {PID}",
-                "monitor_children" => {
-                  "stop_command" => "kill -QUIT {PID}",
-                  "check" => {
-                    "cpu" => {
-                      "every" => 30,
-                      "below" => 80,
-                      "times" => 30
-                    },
-                    "memory" => {
-                      "every" => 30,
-                      "below" => 157286400,
-                      "times" => [
-                        3,
-                        5
-                      ]
-                    }
-                  }
-                }
-              }
-            }
-          },
-
-        }
-      }
     }
     chef.run_list = %w(
-      recipe[chef_eye]
+      chef_eye::test
     )
   end
 end

@@ -1,9 +1,49 @@
-actions :configure, :delete
+actions :configure, :delete, :start, :stop, :restart
 default_action :configure
 
 attribute :owner, kind_of: [String]
 attribute :group, kind_of: [String]
-attribute :cookbook, kind_of: [String], default: 'chef_eye'
-attribute :config, kind_of: [Hash], default: {}
-attribute :helper, kind_of: [TrueClass, FalseClass], default: true
-attribute :helper_prefix, kind_of: [String, NilClass], default: nil
+attribute :cookbook, kind_of: [Symbol, String, NilClass], default: :chef_eye
+# local
+attribute :config_dir, kind_of: [String], default: nil
+attribute :service_provider, kind_of: [String], default: node['chef_eye']['service_type']
+attribute :eye_home, kind_of: [String]
+attribute :eye_file, kind_of: [String], default: 'Eyefile'
+
+
+def config(config = nil, &block)
+  set_or_return(
+    :config,
+    (config || block),
+    kind_of: [Hash, Proc],
+    default: {}
+  )
+end
+
+def eye_config(config = nil, &block)
+  set_or_return(
+    :eye_config,
+    (config || block),
+    kind_of: [Hash, Proc],
+    default: {}
+  )
+end
+
+
+def _eye_home
+  return eye_home unless eye_file
+  _eye_file = Pathname.new(eye_file)
+  if !eye_home && _eye_file.absolute?
+    _eye_file.parent.to_s
+  else
+    eye_home
+  end
+end
+
+def _eye_file
+  if eye_home && eye_file && Pathname.new(eye_file).relative?
+    ::File.join(eye_home, eye_file)
+  else
+    eye_file
+  end
+end
