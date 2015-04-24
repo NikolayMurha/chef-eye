@@ -290,6 +290,11 @@ Or as hash
       notifies :reload, 'chef_eye_service[eye_ubuntu]' # you need notify service for reload
     end
 
+## TODO
+
+  * Add unit tests
+  * Add integration tests
+  
 
 ## License and Authors
 
