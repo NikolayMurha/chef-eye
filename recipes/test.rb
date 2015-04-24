@@ -38,17 +38,16 @@ class EyeTest
 end
 
 %w(vagrant ubuntu).each do |user|
-  bash 'rvm' do
+
+  rvm = ruby_rvm user do
+    rubies '2.0.0'
+  end
+
+  ruby_rvm_gem "#{user}:bundler" do
+    gem 'bundler'
     user user
-    group user
-    env 'HOME' => "/home/#{user}"
-    code <<FILE
-gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 > /dev/null
-curl -sSL https://get.rvm.io | bash -s stable > /dev/null
-/home/#{user}/.rvm/bin/rvm install 2.0.0
-/home/#{user}/.rvm/bin/rvm 2.0.0 do gem install bundler
-FILE
-    not_if "test -d /home/#{user}/.rvm"
+    ruby_string '2.0.0@global'
+    subscribes :install, rvm
   end
 
   3.times do |i|
@@ -56,6 +55,7 @@ FILE
 
     %W(/var/www/#{app_name} /var/www/#{app_name}/shared /var/www/#{app_name}/config /var/www/#{app_name}/shared/log).each do |dir|
       directory dir do
+        recursive true
         owner user
         group user
       end

@@ -4,4 +4,16 @@ DEPENDENCIES
     metadata: true
 
 GRAPH
+  apt (2.7.0)
+  bsw_gpg (0.2.3)
   chef_eye (1.0.0)
+    ruby_rvm (>= 0.0.0)
+  chef_gem (0.1.0)
+  java (1.31.0)
+  ruby_rvm (0.4.9)
+    apt (>= 0.0.0)
+    bsw_gpg (>= 0.0.0)
+    chef_gem (>= 0.0.0)
+    java (>= 0.0.0)
+    sudo (>= 0.0.0)
+  sudo (2.7.1)

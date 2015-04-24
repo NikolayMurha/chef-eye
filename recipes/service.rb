@@ -7,7 +7,7 @@
 # All rights reserved - Do Not Redistribute
 #
 
-package 'realpath'
+require 'pathname'
 
 directory '/etc/eye' do
   owner 'root'
@@ -16,18 +16,30 @@ directory '/etc/eye' do
   mode '755'
 end
 
+directory '/var/log/eye' do
+  owner 'root'
+  group 'root'
+  action :create
+  mode '755'
+end
+
+
 ChefEyeCookbook::Utils.services(node).each do |user_name, config|
   directory config['config_dir'] do
     recursive true
     owner user_name
     group user_name
-    action :create
+  end
+
+  directory ::File.dirname(config['config']['logger']) do
+    owner user_name
+    group user_name
   end
 
   file config['config']['logger'] do
     owner user_name
     group user_name
-    action :create
+    action :touch
   end
 
   # main config
