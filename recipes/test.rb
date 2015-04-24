@@ -43,7 +43,7 @@ end
     rubies '2.0.0'
   end
 
-  3.times do |i|
+  2.times do |i|
     app_name = "rails_sample_#{user}_#{i}"
 
     %W(/var/www/#{app_name} /var/www/#{app_name}/shared /var/www/#{app_name}/config /var/www/#{app_name}/shared/log).each do |dir|
@@ -105,7 +105,7 @@ EOF
           end
         end
       end
-      if i == 2
+      if i == 0
         provider Chef::Provider::ChefEyeApplicationLocal
         eye_home "/var/www/#{app_name}/shared"
       else
