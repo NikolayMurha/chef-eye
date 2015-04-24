@@ -43,13 +43,6 @@ end
     rubies '2.0.0'
   end
 
-  ruby_rvm_gem "#{user}:bundler" do
-    gem 'bundler'
-    user user
-    ruby_string '2.0.0@global'
-    subscribes :install, rvm
-  end
-
   3.times do |i|
     app_name = "rails_sample_#{user}_#{i}"
 
@@ -61,8 +54,11 @@ end
       end
     end
 
-    execute "#{app_name}_bundle" do
-      command "/home/#{user}/.rvm/bin/rvm 2.0.0 do bundle install --jobs 2"
+    bash "#{app_name}_bundle" do
+      code <<EOF
+/home/#{user}/.rvm/bin/rvm 2.0.0@default do gem install bundler
+/home/#{user}/.rvm/bin/rvm 2.0.0@default do bundle install --jobs 2
+EOF
       user user
       group user
       env 'HOME' => "/home/#{user}"
@@ -76,7 +72,7 @@ end
       repository 'https://github.com/MurgaNikolay/rails-base.git'
       revision 'master'
       action :sync
-      notifies :run, "execute[#{app_name}_bundle]", :immediately
+      notifies :run, "bash``[#{app_name}_bundle]", :immediately
     end
 
     test = EyeTest.new
@@ -97,7 +93,7 @@ end
         process 'unicorn' do
           pid_file 'tmp/pids/unicorn.pid'
           stdall 'log/eye.log'
-          start_command "/home/#{user}/.rvm/bin/rvm 2.0.0 do bundle exec unicorn_rails -D -E development -c config/unicorn.rb"
+          start_command "/home/#{user}/.rvm/bin/rvm 2.0.0@default do bundle exec unicorn_rails -D -E development -c config/unicorn.rb"
           stop_signals [:TERM, 10.seconds, :KILL]
           start_timeout 10
           restart_grace 10
