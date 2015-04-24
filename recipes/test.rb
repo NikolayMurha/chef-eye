@@ -31,8 +31,8 @@ class EyeTest
     puts "************* Restart Action for #{resource.name}"
     resource.run_action(:restart)
     sleep 5
-    puts "************* Delete Action for #{resource.name}"
-    resource.run_action(:delete)
+    # puts "************* Delete Action for #{resource.name}"
+    # resource.run_action(:delete)
     puts "************* Test completed for #{resource.name}"
   end
 end
@@ -72,7 +72,7 @@ EOF
       repository 'https://github.com/MurgaNikolay/rails-base.git'
       revision 'master'
       action :sync
-      notifies :run, "bash``[#{app_name}_bundle]", :immediately
+      notifies :run, "bash[#{app_name}_bundle]", :immediately
     end
 
     test = EyeTest.new
