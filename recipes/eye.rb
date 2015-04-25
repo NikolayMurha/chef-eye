@@ -1,3 +1,4 @@
+include_recipe 'apt'
 include_recipe 'build-essential'
 
 gem_package 'eye' do
