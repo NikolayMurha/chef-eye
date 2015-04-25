@@ -11,4 +11,5 @@ recipe 'chef_eye',  'Installs all'
 supports 'ubuntu'
 supports 'debian'
 
+depends 'build-essential'
 depends 'ruby_rvm'

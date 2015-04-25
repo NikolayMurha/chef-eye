@@ -9,6 +9,10 @@ module ChefEyeCookbook
         attribute :group, kind_of: [String], default: 'root'
         attribute :mode, kind_of: [String], default: '0644'
         attribute :cookbook, kind_of: [Symbol, String,  NilClass], default: :chef_eye
+
+        def require_eye
+          require 'eye'
+        end
       end
     end
   end
