@@ -79,7 +79,6 @@ Vagrant.configure('2') do |config|
     chef.json = {
     }
     chef.run_list = %w(
-      chef_eye::test
     )
   end
 end
