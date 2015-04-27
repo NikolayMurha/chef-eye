@@ -72,36 +72,36 @@ By default service named by `eye_<username>`. For example, service for user vagr
 If you need to reload service for user `vagrant`, you can use
 
 ```ruby
-    some_resource do
-      ...
-      notifies :reload, 'chef_eye_service[eye_vagrant]'
-    end
+some_resource do
+  ...
+  notifies :reload, 'chef_eye_service[eye_vagrant]'
+end
 ```
 
 If you want to change configuration for service for `ubuntu`:
 
 ```ruby
-    default['chef_eye']['services'] = {
-      ubuntu: {
-        'logger' => '/var/log/eye/ubuntu.log'
-        'mail' => {
-          'host' => 'mx.some.host',
-          'port' => 25,
-          'domain' => 'some.host'
-        },
-        contacts: {
-          'errors' => {
-            'type' => 'mail',
-            'contact' => 'error@some.host'
-          },
-          'dev' => {
-            'type' => 'mail',
-            'contact' => 'error@some.host',
-            'opts' => {}
-          },
-        }
-      }
+default['chef_eye']['services'] = {
+  ubuntu: {
+    'logger' => '/var/log/eye/ubuntu.log'
+    'mail' => {
+      'host' => 'mx.some.host',
+      'port' => 25,
+      'domain' => 'some.host'
+    },
+    contacts: {
+      'errors' => {
+        'type' => 'mail',
+        'contact' => 'error@some.host'
+      },
+      'dev' => {
+        'type' => 'mail',
+        'contact' => 'error@some.host',
+        'opts' => {}
+      },
     }
+  }
+}
 ```
 
 ### chef_eye::applications
@@ -110,56 +110,56 @@ This service generate `chef_eye_application` LWRP's using `node['chef_eye']['app
 For example:
 
 ```ruby
-    default['chef_eye']['applications']['my_app'] = {
-      type: 'local',
-      owner: 'vagrant', # required
-      group: 'vagrant',
-      config_dir: '/var/www/rails_sample/shared/config',
-      
-      # for local version
-      eye_file: 'Eyefile',
-      eye_home: '/var/www/rails_sample/shared',
-      eye_config: {
-        logger: '/var/www/rails_sample/shared/log/eye.log'
+default['chef_eye']['applications']['my_app'] = {
+  type: 'local',
+  owner: 'vagrant', # required
+  group: 'vagrant',
+  config_dir: '/var/www/rails_sample/shared/config',
+  
+  # for local version
+  eye_file: 'Eyefile',
+  eye_home: '/var/www/rails_sample/shared',
+  eye_config: {
+    logger: '/var/www/rails_sample/shared/log/eye.log'
+  },
+  service_provider 'upstart',
+  #application config
+  config: {
+    working_dir: '/var/www/rails_sample/current',
+    checks: {
+      cpu: {
+        :every => 30,
+        :below => 80,
+        :times => 3
       },
-      service_provider 'upstart',
-      #application config
-      config: {
-        working_dir: '/var/www/rails_sample/current',
+      memory:{
+        :every => 30,
+        :below => 73400320,
+        :times => [ 3, 5 ]
+      }
+    },
+    process: {
+      unicorn: {
+        daemonize:  true,
+        pid_file: 'puma.pid',
+        stdall: 'puma.log',
+        start_command: 'bundle exec unicorn --port 33280 --environment production Config.ru',
+        stop_signals: ['TERM', 5, 'KILL']
+      },
+      resque: {
+        pid_file: 'tmp/pids/resque.pid',
+        start_command: 'bin/resque work --queue=high',
         checks: {
           cpu: {
             :every => 30,
             :below => 80,
             :times => 3
-          },
-          memory:{
-            :every => 30,
-            :below => 73400320,
-            :times => [ 3, 5 ]
-          }
-        },
-        process: {
-          unicorn: {
-            daemonize:  true,
-            pid_file: 'puma.pid',
-            stdall: 'puma.log',
-            start_command: 'bundle exec unicorn --port 33280 --environment production Config.ru',
-            stop_signals: ['TERM', 5, 'KILL']
-          },
-          resque: {
-            pid_file: 'tmp/pids/resque.pid',
-            start_command: 'bin/resque work --queue=high',
-            checks: {
-              cpu: {
-                :every => 30,
-                :below => 80,
-                :times => 3
-              }
-            }
           }
         }
       }
     }
+  }
+}
 ```
 ## LWRPs
 
@@ -226,67 +226,67 @@ For example:
 Cookbook provide `chef_eye_application` resource. This is a main resource for generate eye application configuration.
 
 ```ruby
-    chef_eye_application 'name_of_my_app' do
-      owner 'ubuntu'
-      group 'ubuntu'
-      working_dir '/var/www/rails_sample'
-      config do
-        env 'RAILS_ENV' => 'production'
-        working_dir '/var/www/my_app'
-        trigger :flapping, :times => 10, :within => 1.minute
-        process :puma do
-          daemonize true
-          pid_file "puma.pid"
-          stdall "puma.log"
-          start_command "bundle exec puma --port 33280 --environment production thin.ru"
-          stop_signals [:TERM, 5.seconds, :KILL]
-          restart_command "kill -USR2 {PID}"
-          restart_grace 10.seconds
-          check :cpu, :every => 30, :below => 80, :times => 3
-          check :memory, :every => 30, :below => 70.megabytes, :times => [3,5]
-        end
-      end
-      action :configure # or :delete
-      notifies :reload, 'chef_eye_service[eye_ubuntu]' # you need notify service for reload
+chef_eye_application 'name_of_my_app' do
+  owner 'ubuntu'
+  group 'ubuntu'
+  working_dir '/var/www/rails_sample'
+  config do
+    env 'RAILS_ENV' => 'production'
+    working_dir '/var/www/my_app'
+    trigger :flapping, :times => 10, :within => 1.minute
+    process :puma do
+      daemonize true
+      pid_file "puma.pid"
+      stdall "puma.log"
+      start_command "bundle exec puma --port 33280 --environment production thin.ru"
+      stop_signals [:TERM, 5.seconds, :KILL]
+      restart_command "kill -USR2 {PID}"
+      restart_grace 10.seconds
+      check :cpu, :every => 30, :below => 80, :times => 3
+      check :memory, :every => 30, :below => 70.megabytes, :times => [3,5]
     end
+  end
+  action :configure # or :delete
+  notifies :reload, 'chef_eye_service[eye_ubuntu]' # you need notify service for reload
+end
 ```
 
 Or as hash
 
 ```ruby
-    chef_eye_application 'name_of_my_app' do
-      owner 'ubuntu'
-      group 'ubuntu'
-      config({
-          env: {
-            RAILS_ENV: 'production'
-          },
-          working_dir: '/var/www/my_app',
-          triggers: {
-            flapping: {
-              :times => 10,
-              :within => 1.minute
-            }
-          },
-          processes: {
-            puma: {
-              daemonize: true,
-              pid_file: "puma.pid",
-              stdall: "puma.log",
-              start_command: "bundle exec puma --port 33280 --environment production thin.ru",
-              stop_signals: [:TERM, 5.seconds, :KILL],
-              restart_command: "kill -USR2 {PID}",
-              restart_grace: 10.seconds,
-              checks: {
-                cpu: {:every => 30, :below => 80, :times => 3},
-                memory: {:every => 30, :below => 70.megabytes, :times => [3, 5]}
-              }
-            }
+chef_eye_application 'name_of_my_app' do
+  owner 'ubuntu'
+  group 'ubuntu'
+  config({
+      env: {
+        RAILS_ENV: 'production'
+      },
+      working_dir: '/var/www/my_app',
+      triggers: {
+        flapping: {
+          :times => 10,
+          :within => 1.minute
+        }
+      },
+      processes: {
+        puma: {
+          daemonize: true,
+          pid_file: "puma.pid",
+          stdall: "puma.log",
+          start_command: "bundle exec puma --port 33280 --environment production thin.ru",
+          stop_signals: [:TERM, 5.seconds, :KILL],
+          restart_command: "kill -USR2 {PID}",
+          restart_grace: 10.seconds,
+          checks: {
+            cpu: {:every => 30, :below => 80, :times => 3},
+            memory: {:every => 30, :below => 70.megabytes, :times => [3, 5]}
           }
-        })
-      action :configure # or :delete
-      notifies :reload, 'chef_eye_service[eye_ubuntu]' # you need notify service for reload
-    end
+        }
+      }
+    })
+  action :configure # or :delete
+  notifies :reload, 'chef_eye_service[eye_ubuntu]' # you need notify service for reload
+end
 ```
 
 ## TODO
