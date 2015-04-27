@@ -71,13 +71,16 @@ By default service named by `eye_<username>`. For example, service for user vagr
 
 If you need to reload service for user `vagrant`, you can use
 
+```ruby
     some_resource do
       ...
       notifies :reload, 'chef_eye_service[eye_vagrant]'
     end
+```
 
 If you want to change configuration for service for `ubuntu`:
 
+```ruby
     default['chef_eye']['services'] = {
       ubuntu: {
         'logger' => '/var/log/eye/ubuntu.log'
@@ -99,12 +102,14 @@ If you want to change configuration for service for `ubuntu`:
         }
       }
     }
+```
 
 ### chef_eye::applications
 
 This service generate `chef_eye_application` LWRP's using `node['chef_eye']['applications']` attributes. 
 For example:
 
+```ruby
     default['chef_eye']['applications']['my_app'] = {
       type: 'local',
       owner: 'vagrant', # required
@@ -155,20 +160,10 @@ For example:
         }
       }
     }
-
+```
 ## LWRPs
 
 ### chef_eye_service
-  
-attribute :service_name, name_attribute: true, kind_of: [String]
-attribute :type, kind_of: [String], default: 'user'
-attribute :service_provider, kind_of: [String], default: node['chef_eye']['service_type']
-attribute :owner, kind_of: [String], default: 'root'
-attribute :group, kind_of: [String], default: 'root'
-attribute :cookbook, kind_of: [Symbol, String, NilClass], default: nil
-attribute :eye_home, kind_of: [String, NilClass], default: nil
-attribute :eye_file, kind_of: [String, NilClass], default: nil
-
 
 #### Attributes  
 
@@ -230,6 +225,7 @@ attribute :eye_file, kind_of: [String, NilClass], default: nil
 
 Cookbook provide `chef_eye_application` resource. This is a main resource for generate eye application configuration.
 
+```ruby
     chef_eye_application 'name_of_my_app' do
       owner 'ubuntu'
       group 'ubuntu'
@@ -253,9 +249,11 @@ Cookbook provide `chef_eye_application` resource. This is a main resource for ge
       action :configure # or :delete
       notifies :reload, 'chef_eye_service[eye_ubuntu]' # you need notify service for reload
     end
+```
 
 Or as hash
 
+```ruby
     chef_eye_application 'name_of_my_app' do
       owner 'ubuntu'
       group 'ubuntu'
@@ -289,6 +287,7 @@ Or as hash
       action :configure # or :delete
       notifies :reload, 'chef_eye_service[eye_ubuntu]' # you need notify service for reload
     end
+```
 
 ## TODO
 
