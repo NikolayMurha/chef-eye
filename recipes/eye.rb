@@ -21,4 +21,3 @@ require_eye = ruby_block 'require_eye' do
   subscribes :run, eye, :immediately
 end
 require_eye.run_action(:run)
-

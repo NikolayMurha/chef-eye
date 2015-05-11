@@ -23,7 +23,6 @@ directory '/var/log/eye' do
   mode '755'
 end
 
-
 ChefEyeCookbook::Utils.services(node).each do |user_name, config|
   directory config['config_dir'] do
     recursive true
