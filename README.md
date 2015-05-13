@@ -7,7 +7,7 @@ Cookbook for setup [eye](https://github.com/kostya/eye) services and application
 
 ### Related projects
 
-[Capistrano chef eye](https://github.com/MurgaNikolay/capistrano-chef-eye)
+[Capistrano chef eye](https://github.com/MurgaNikolay/capistrano-chef-eye) cookbook companion for Capistrano.
 
 ## Supported Platforms
 
