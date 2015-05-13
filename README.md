@@ -1,9 +1,13 @@
-# chef_eye
+# chef_eye cookbook
 
 Cookbook for setup [eye](https://github.com/kostya/eye) services and applications
 
 [![Code Climate](https://codeclimate.com/github/MurgaNikolay/chef-eye/badges/gpa.svg)](https://codeclimate.com/github/MurgaNikolay/chef-eye)
 [![Build Status](https://travis-ci.org/MurgaNikolay/chef-eye.svg?branch=master)](https://travis-ci.org/MurgaNikolay/chef-eye)
+
+### Related projects
+
+[Capistrano chef eye](https://github.com/MurgaNikolay/capistrano-chef-eye)
 
 ## Supported Platforms
 
