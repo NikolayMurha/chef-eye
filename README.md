@@ -129,7 +129,7 @@ default['chef_eye']['applications']['my_app'] = {
   eye_config: {
     logger: '/var/www/rails_sample/shared/log/eye.log'
   },
-  service_provider 'upstart',
+  service_provider: 'upstart',
   #application config
   config: {
     working_dir: '/var/www/rails_sample/current',
