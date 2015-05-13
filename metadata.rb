@@ -13,4 +13,3 @@ supports 'debian'
 
 depends 'apt'
 depends 'build-essential'
-depends 'ruby_rvm'
