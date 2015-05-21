@@ -32,6 +32,8 @@ GEM
     buff-ruby_engine (0.1.0)
     buff-shell_out (0.2.0)
       buff-ruby_engine (~> 0.1.0)
+    bugsnag (2.8.6)
+      multi_json (~> 1.0)
     builder (3.2.2)
     celluloid (0.15.2)
       timers (~> 1.1.0)
@@ -78,7 +80,11 @@ GEM
       hashie (>= 2.0.2)
       multi_json (>= 1.3.0)
     coderay (1.1.0)
+    cuba (3.4.0)
+      rack
     diff-lcs (1.2.5)
+    domain_name (0.5.24)
+      unf (>= 0.0.5, < 1.0.0)
     erubis (2.7.0)
     eye (0.6.4)
       celluloid (~> 0.15.0)
@@ -86,6 +92,17 @@ GEM
       sigar (~> 0.7.2)
       state_machine
       thor
+    eye-bugsnag (0.0.1)
+      bugsnag (>= 1.2.10)
+      eye (~> 0.5)
+    eye-hipchat (0.0.4)
+      eye (~> 0.5)
+      hipchat (~> 1.2)
+    eye-http (0.6.3)
+      cuba
+      eye (~> 0.6.2)
+      reel (~> 0.5.0)
+      reel-rack
     faraday (0.8.9)
       multipart-post (~> 1.2.0)
     fauxhai (2.3.0)
@@ -110,6 +127,21 @@ GEM
       builder (>= 2.1.2)
     hashie (2.1.2)
     highline (1.7.2)
+    hipchat (1.5.1)
+      httparty
+      mimemagic
+    http (0.8.9)
+      addressable (~> 2.3)
+      http-cookie (~> 1.0)
+      http-form_data (~> 1.0.1)
+      http_parser.rb (~> 0.6.0)
+    http-cookie (1.0.2)
+      domain_name (~> 0.5)
+    http-form_data (1.0.1)
+    http_parser.rb (0.6.0)
+    httparty (0.13.5)
+      json (~> 1.8)
+      multi_xml (>= 0.5.2)
     httpclient (2.6.0.1)
     httpi (0.9.7)
       rack
@@ -124,6 +156,7 @@ GEM
     logify (0.2.0)
     method_source (0.8.2)
     mime-types (2.4.3)
+    mimemagic (0.3.0)
     mini_portile (0.6.2)
     minitar (0.5.4)
     mixlib-authentication (1.3.0)
@@ -133,6 +166,7 @@ GEM
     mixlib-log (1.6.0)
     mixlib-shellout (2.0.1)
     multi_json (1.11.0)
+    multi_xml (0.5.5)
     multipart-post (1.2.0)
     net-http-persistent (2.9.4)
     net-scp (1.2.1)
@@ -172,6 +206,15 @@ GEM
     rainbow (2.0.0)
     rake (10.4.2)
     rbzip2 (0.2.0)
+    reel (0.5.0)
+      celluloid (>= 0.15.1)
+      celluloid-io (>= 0.15.0)
+      http (>= 0.6.0.pre)
+      http_parser.rb (>= 0.6.0)
+      websocket_parser (>= 0.1.6)
+    reel-rack (0.2.2)
+      rack (>= 1.4.0)
+      reel (>= 0.5.0)
     retryable (1.3.6)
     ridley (1.7.1)
       addressable
@@ -256,12 +299,16 @@ GEM
     timers (1.1.0)
     treetop (1.6.2)
       polyglot (~> 0.3)
+    unf (0.1.4)
+      unf_ext
+    unf_ext (0.0.7.1)
     uuidtools (2.1.5)
     varia_model (0.3.2)
       buff-extensions (~> 0.2)
       hashie (>= 2.0.2)
     wasabi (1.0.0)
       nokogiri (>= 1.4.0)
+    websocket_parser (1.0.0)
     winrm (1.1.3)
       gssapi (~> 1.0.0)
       httpclient (~> 2.2, >= 2.2.0.2)
@@ -280,6 +327,9 @@ DEPENDENCIES
   berkshelf
   chefspec (~> 4.2.0)
   eye
+  eye-bugsnag
+  eye-hipchat
+  eye-http
   foodcritic (~> 4.0)
   rubocop (~> 0.0)
   stove

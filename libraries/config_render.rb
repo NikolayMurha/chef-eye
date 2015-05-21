@@ -1,20 +1,84 @@
-unless defined?(ChefEyeCookbook::ConfigRender)
+unless defined?(ChefEyeCookbook::ConfigNewRender)
   module ChefEyeCookbook
     module ConfigRender
       module Methods
-        TYPED_FUNCTIONS = [:check, :trigger]
-        BLOCKS = [:monitor_children]
-        TYPED_BLOCKS = [:group, :process, :contact_group]
-        FILTERED_KEYS = [:name, :type, :group, :application]
+        module DynamicRenderers
+          MULTIPLY = [ :chain, :trigger, :checks, :triggers, :check, :nocheck]
+          def self.extended(klass)
+            klass.create_renderers_methods
+          end
 
+          def fetch_methods(opts)
+            (opts.methods - Object.methods).reject { |m| m.to_s.end_with?('=', 'initialize', '~', '>', '<', '?') || m.to_s.start_with?('get_', 'set_') }.map! { |m| opts.method(m) }
+          end
+
+          def create_renderers_methods
+            dsl = []
+            dsl << fetch_methods(::Eye::Dsl::ConfigOpts.new)
+            dsl << fetch_methods(::Eye::Dsl::ProcessOpts.new)
+            dsl << fetch_methods(::Eye::Dsl::ApplicationOpts.new)
+            dsl.flatten!
+
+            m = Module.new do
+              dsl.each do |method|
+                # puts "#{method.name} #{method.parameters}"
+                parameters = method.parameters
+                if parameters.flatten.include?(:block)
+                  if parameters.size > 1
+                    puts "Define block with name render_#{method.name}"
+                    define_method "render_#{method.name}" do |value|
+                      value.each_with_object([]) do |(block_name, config), ret|
+                        ret << render_block(method.name, block_name, config)
+                      end
+                    end
+                  else
+                    puts "Define block render_#{method.name}"
+                    define_method "render_#{method.name}" do |value|
+                      render_block(method.name, value)
+                    end
+                  end
+                  next
+                end
+                if MULTIPLY.include?(method.name) #|| parameters.size > 0 && parameters[0][0] == :req
+                  # multiply called
+                  puts "Define method render_#{method.name}"
+                  define_method "render_#{method.name}" do |value|
+                    value.each_with_object([]) do |(name, arg), ret|
+                      params = if parameters.size > 1
+                        "#{name.to_source}, #{arg.to_source}"
+                      else
+                        arg.to_source
+                      end
+                      ret.push("#{method.name}(#{params})")
+                    end
+                  end
+                else
+                  puts "Define method render_#{method.name}"
+                  define_method "render_#{method.name}" do |args|
+                    params = if parameters.size > 0
+                      "(#{args.is_a?(Array) ? args.map(&:to_source).join(', ') : args.to_source})"
+                    else
+                      ''
+                    end
+                    method.name.to_s+params
+                  end
+                end
+              end
+            end
+            self.send :include, m
+          end
+        end
+        extend DynamicRenderers
+
+        FILTERED_KEYS = [:name, :group, :application, :type]
         KEY_MAP = {
           triggers: :trigger,
           checks: :check,
           processes: :process,
           groups: :group,
+          contacts: :contact,
           nochecks: :nocheck,
-          notriggers: :trigger,
-          contacts: :contact
+          notriggers: :trigger
         }
 
         attr_writer :source_mode
@@ -23,25 +87,25 @@ unless defined?(ChefEyeCookbook::ConfigRender)
           @source_mode ||= SOURCE_MODE_SYMBOLIZE_KEYS
         end
 
-        def inflect(key)
-          return KEY_MAP[key] if KEY_MAP[key]
-          key
-        end
-
         def render_config(config)
           render_hash(config).join("\n")
         end
 
-        def render_logger(args)
-          "logger(#{args.is_a?(Array) ? args.map(&:to_source).join(', ') : args.to_source })"
+        def render_block(name, *args, block)
+          ret = []
+          params = args.size > 0 ? "(#{args.map(&:to_source).join(', ')})" : ''
+          ret << "#{name}#{params} do"
+          ret << render_hash(block)
+          ret << 'end'
         end
 
         def render_hash(variable)
           ret = []
-          variable = symbolize_keys(variable.delete_keys_recursive(FILTERED_KEYS))
+          variable = symbolize_keys(variable)
+          variable = variable.delete_keys_recursive(FILTERED_KEYS, [:contacts, :contact])
           variable.each do |method, value|
             method = inflect(method)
-            render_strategy = "render_#{method}".to_sym
+            render_strategy = "render_#{method.to_s}".to_sym
             if self.respond_to?(render_strategy)
               ret.push send(render_strategy, value)
             else
@@ -65,37 +129,15 @@ unless defined?(ChefEyeCookbook::ConfigRender)
           end
         end
 
-        BLOCKS.each do |name|
-          define_method "render_#{name}" do |value|
-            ret = []
-            ret.push "#{name} do"
-            ret.push render_hash(value)
-            ret.push 'end'
-            ret
-          end
-        end
-
-        TYPED_BLOCKS.each do |name|
-          define_method "render_#{name}" do |value|
-            value.each_with_object([]) do |(block_type, config), ret|
-              ret.push "#{name}(#{block_type.to_source(source_mode)}) do"
-              ret.push render_hash(config)
-              ret.push 'end'
-            end
-          end
-        end
-
-        TYPED_FUNCTIONS.each do |name|
-          define_method "render_#{name}" do |value|
-            value.each_with_object([]) do |(func_name, args), ret|
-              ret.push "#{name}(#{func_name.to_sym.to_source(source_mode)}, #{args.to_source(source_mode)})"
-            end
-          end
-        end
-
         def symbolize_keys(hash)
           ChefEyeCookbook::Utils.symbolize_keys(hash)
         end
+
+        def inflect(key)
+          return KEY_MAP[key] if KEY_MAP[key]
+          key
+        end
+
       end
       extend Methods
     end
@@ -119,13 +161,19 @@ unless defined?(ChefEyeCookbook::ConfigRender)
       "{#{items.join(', ')}}"
     end
 
-    def delete_keys_recursive(keys)
+    def delete_keys_recursive(keys, leave=[])
       each_with_object({}) do |(k, v), h|
         next h if keys.include?(k)
-        v = v.delete_keys_recursive(keys) if v.is_a?(::Hash)
+        v = v.delete_keys_recursive(keys, leave) if v.is_a?(::Hash) && !leave.include?(k)
         h[k] = v
         h
       end
+    end
+  end
+
+  class NilClass
+    def to_source(_mode = SOURCE_MODE_DEFAULT)
+      'nil'
     end
   end
 

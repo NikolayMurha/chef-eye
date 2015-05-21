@@ -4,6 +4,7 @@ default_action :create
 attribute :source, kind_of: [String], default: 'config.erb'
 attribute :config_dir, kind_of: [String, NilClass], default: nil
 attribute :config_files, kind_of: [Array, String, NilClass], default: nil
+attribute :plugins, kind_of: [Array], default: []
 
 def config(config = nil, &block)
   opts = nil

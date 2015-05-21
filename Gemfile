@@ -3,7 +3,13 @@ source 'https://rubygems.org'
 # gem 'vagrant'
 gem 'berkshelf'
 gem 'stove'
-gem 'eye'
+group :test do
+  gem 'eye'
+  gem 'eye-hipchat'
+  gem 'eye-bugsnag'
+  gem 'eye-http'
+end
+
 group :test do
   gem 'foodcritic', '~> 4.0'
   gem 'rubocop', '~> 0.0'
