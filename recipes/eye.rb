@@ -1,14 +1,20 @@
 include_recipe 'apt'
 include_recipe 'build-essential'
 
+
+execute 'fix_system_gems_permissions' do
+  command 'find /var/lib/gems/ -type f -name \'*.rb\' -exec chmod a+r {} \;'
+  only_if 'test -d /var/lib/gems'
+end
+
 gem_package 'eye' do
   version node['chef_eye']['version']
+  notifies :run, 'execute[fix_system_gems_permissions]'
 end
 
 eye = chef_gem 'eye' do
   version node['chef_eye']['version']
 end
-
 ruby_block 'require_eye' do
   block do
     begin
@@ -20,11 +26,13 @@ ruby_block 'require_eye' do
     end
   end
   subscribes :run, eye, :immediately
+  notifies :run, 'execute[fix_system_gems_permissions]'
 end.run_action(:run)
 
 node['chef_eye']['plugins'].each do |gem, options|
   gem_package gem do
     version options['version'] if options['version']
+    notifies :run, 'execute[fix_system_gems_permissions]'
   end
 
   plugin = chef_gem gem do
@@ -40,6 +48,9 @@ node['chef_eye']['plugins'].each do |gem, options|
       end
     end
     subscribes :run, plugin, :immediately
+
   end.run_action(:run)
 end
+
+
 
