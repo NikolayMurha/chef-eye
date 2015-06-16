@@ -10,7 +10,7 @@ def config(config = nil, &block)
 
   if config
     opts = ::Eye::Dsl::ApplicationOpts.new(name)
-    code = ::ChefEyeCookbook::ConfigRender.render_config(config)
+    code = ::ChefEyeCookbook::ConfigRender.new.render_config(config)
     opts.instance_eval(code)
   elsif block
     opts = ::Eye::Dsl::ApplicationOpts.new(name)

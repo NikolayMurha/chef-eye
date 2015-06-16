@@ -34,8 +34,9 @@ action :configure do
     owner new_resource.owner
     group new_resource.group
     config eye_config
-    config_dir new_resource.config_dir
+    # config_dir new_resource.config_dir
     config_files application_config
+    plugins new_resource.eye_plugins
     notifies :restart, service_resource
   end
 

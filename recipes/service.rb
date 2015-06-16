@@ -48,6 +48,7 @@ ChefEyeCookbook::Utils.services(node).each do |user_name, config|
     group user_name
     config config['config']
     config_dir config['config_dir']
+    plugins config['plugins']
   end
 
   chef_eye_service config['service_name']do

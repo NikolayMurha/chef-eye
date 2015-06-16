@@ -10,7 +10,7 @@ module ChefEyeCookbook
             owner new_resource.owner
             group new_resource.group
             mode new_resource.mode
-            helpers ::ChefEyeCookbook::ConfigRender::Methods
+            helpers ::ChefEyeCookbook::ConfigRender::Helpers
             variables(template_variables)
           end
         end

@@ -20,7 +20,6 @@ action :configure do
 
   chef_eye_config config_loader do
     config_dir new_resource.config_dir
-    # config_files config_file
   end if config_loader
 
   chef_eye_application_config new_resource.name do

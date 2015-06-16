@@ -9,6 +9,7 @@ attribute :config_dir, kind_of: [String], default: nil
 attribute :service_provider, kind_of: [String], default: node['chef_eye']['service_type']
 attribute :eye_home, kind_of: [String]
 attribute :eye_file, kind_of: [String], default: 'Eyefile'
+attribute :eye_plugins, kind_of: [Array], default: []
 
 def config(config = nil, &block)
   set_or_return(
