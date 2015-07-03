@@ -40,17 +40,17 @@ namespace :unit do
   end
 end
 
-# Integration tests. Kitchen.ci
-namespace :integration do
-  begin
-    require 'kitchen/rake_tasks'
-
-    desc 'Run kitchen integration tests'
-    Kitchen::RakeTasks.new
-  rescue LoadError
-    puts '>>>>> Kitchen gem not loaded, omitting tasks' unless ENV['CI']
-  end
-end
+# # Integration tests. Kitchen.ci
+# namespace :integration do
+#   begin
+#     require 'kitchen/rake_tasks'
+#
+#     desc 'Run kitchen integration tests'
+#     Kitchen::RakeTasks.new
+#   rescue LoadError
+#     puts '>>>>> Kitchen gem not loaded, omitting tasks' unless ENV['CI']
+#   end
+# end
 
 desc 'Run all tests on Travis'
 task travis: ['style']
