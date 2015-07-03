@@ -8,9 +8,7 @@ group :test do
   gem 'eye-hipchat'
   gem 'eye-bugsnag'
   gem 'eye-http'
-end
-
-group :test do
+  gem 'vagrant'
   gem 'foodcritic', '~> 4.0'
   gem 'rubocop', '~> 0.0'
   gem 'chefspec', '~> 4.2.0'

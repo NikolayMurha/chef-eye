@@ -303,6 +303,7 @@ GEM
       unf_ext
     unf_ext (0.0.7.1)
     uuidtools (2.1.5)
+    vagrant (1.5.0)
     varia_model (0.3.2)
       buff-extensions (~> 0.2)
       hashie (>= 2.0.2)
@@ -334,3 +335,4 @@ DEPENDENCIES
   rubocop (~> 0.0)
   stove
   test-kitchen (~> 1.3.0)
+  vagrant
