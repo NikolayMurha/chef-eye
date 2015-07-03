@@ -16,17 +16,15 @@ module ChefEyeCookbook
         config ||= {}
         ::Chef::Mixin::DeepMerge.deep_merge(
           config,
-          {
-            'type' => 'user',
-            'owner' => user_name,
-            'group' => user_name,
-            'service_name' => "eye_#{user_name}",
-            'config_dir' => "/etc/eye/#{user_name}",
-            'eye_file' => "/etc/eye/#{user_name}.eye",
-            'plugins' => [],
-            'config' => {
-              'logger' => "/var/log/eye/#{user_name}.log"
-            }
+          'type' => 'user',
+          'owner' => user_name,
+          'group' => user_name,
+          'service_name' => "eye_#{user_name}",
+          'config_dir' => "/etc/eye/#{user_name}",
+          'eye_file' => "/etc/eye/#{user_name}.eye",
+          'plugins' => [],
+          'config' => {
+            'logger' => "/var/log/eye/#{user_name}.log"
           }
         )
       end

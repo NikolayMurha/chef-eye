@@ -1,7 +1,6 @@
 include_recipe 'apt'
 include_recipe 'build-essential'
 
-
 execute 'fix_system_gems_permissions' do
   command 'find /var/lib/gems/ -type f -name \'*.rb\' -exec chmod a+r {} \;'
   only_if 'test -d /var/lib/gems'
@@ -42,15 +41,11 @@ node['chef_eye']['plugins'].each do |gem, options|
   ruby_block "require_#{gem}" do
     block do
       begin
-        Array(options['require']).each {|file| require file}
+        Array(options['require']).each { |file| require file }
       rescue e
         Chef::Log.debug(e.message)
       end
     end
     subscribes :run, plugin, :immediately
-
   end.run_action(:run)
 end
-
-
-

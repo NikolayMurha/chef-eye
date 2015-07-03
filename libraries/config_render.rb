@@ -40,7 +40,7 @@ unless defined?(ChefEyeCookbook::ConfigRender)
         variable = variable.delete_keys_recursive(FILTERED_KEYS, [:contacts, :contact])
         variable.each do |method, value|
           method = inflect(method)
-          render_strategy = "render_#{method.to_s}".to_sym
+          render_strategy = "render_#{method}".to_sym
           if self.respond_to?(render_strategy)
             ret.push send(render_strategy, value)
           else
@@ -86,53 +86,65 @@ unless defined?(ChefEyeCookbook::ConfigRender)
         dsl << fetch_methods(::Eye::Dsl::ConfigOpts.new)
         dsl << fetch_methods(::Eye::Dsl::ApplicationOpts.new)
         dsl << fetch_methods(::Eye::Dsl::ProcessOpts.new)
-
         dsl.flatten!
-
         dsl.each do |method|
           renderer_name = "render_#{method.name}".to_sym
-          if respond_to?(renderer_name)
-            next
-          end
+          next if respond_to?(renderer_name)
+          generate_block_renderers(method, renderer_name)
+          generate_multiply_renderers(method, renderer_name)
+          generate_general_renderers(method, renderer_name)
+        end
+      end
 
-          parameters = method.parameters
-          if parameters.flatten.include?(:block)
-            if parameters.size > 1
-              self.class.send(:define_method, renderer_name) do |value|
-                value.each_with_object([]) do |(block_name, config), ret|
-                  ret << render_block(method.name, block_name, config)
-                end
-              end
-            else
-              self.class.send(:define_method, renderer_name) do |value|
-                render_block(method.name, value)
-              end
-            end
-            next
-          end
-          if MULTIPLY.include?(method.name) #|| parameters.size > 0 && parameters[0][0] == :req
-            # multiply called
-            self.class.send(:define_method, renderer_name) do |value|
-              value.each_with_object([]) do |(name, arg), ret|
-                params = if parameters.size > 1
-                  "#{name.to_source(source_mode)}, #{arg.to_source(source_mode)}"
-                else
-                  arg.to_source(source_mode)
-                end
-                ret.push("#{method.name}(#{params})")
-              end
-            end
-          else
-            self.class.send(:define_method, renderer_name) do |args|
-              params = if parameters.size > 0
-                "(#{expand_args(args)})"
-              else
-                ''
-              end
-              method.name.to_s+params
-            end
+      def generate_general_renderers(method, renderer_name)
+        return if method_with_block?(method)
+        return if MULTIPLY.include?(method.name)
+        parameters = method.parameters
+        self.class.send(:define_method, renderer_name) do |args|
+          params = if parameters.size > 0
+                     "(#{expand_args(args)})"
+                   else
+                     ''
+                   end
+          method.name.to_s + params
+        end
+      end
+
+      def generate_multiply_renderers(method, renderer_name)
+        return if method_with_block?(method)
+        return unless MULTIPLY.include?(method.name)
+        # multiply called
+        parameters = method.parameters
+        self.class.send(:define_method, renderer_name) do |value|
+          value.each_with_object([]) do |(name, arg), ret|
+            params = if parameters.size > 1
+                       "#{name.to_source(source_mode)}, #{arg.to_source(source_mode)}"
+                     else
+                       arg.to_source(source_mode)
+                     end
+            ret.push("#{method.name}(#{params})")
           end
         end
+      end
+
+      def generate_block_renderers(method, renderer_name)
+        return unless method_with_block?(method)
+        parameters = method.parameters
+        if parameters.size > 1
+          self.class.send(:define_method, renderer_name) do |value|
+            value.each_with_object([]) do |(block_name, config), ret|
+              ret << render_block(method.name, block_name, config)
+            end
+          end
+        else
+          self.class.send(:define_method, renderer_name) do |value|
+            render_block(method.name, value)
+          end
+        end
+      end
+
+      def method_with_block?(method)
+        method.parameters.flatten.include?(:block)
       end
 
       module Helpers
@@ -165,7 +177,7 @@ unless defined?(ChefEyeCookbook::ConfigRender)
       "{#{items.join(', ')}}"
     end
 
-    def delete_keys_recursive(keys, leave=[])
+    def delete_keys_recursive(keys, leave = [])
       each_with_object({}) do |(k, v), h|
         next h if keys.include?(k)
         v = v.delete_keys_recursive(keys, leave) if v.is_a?(::Hash) && !leave.include?(k)
