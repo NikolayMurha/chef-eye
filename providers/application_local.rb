@@ -86,7 +86,9 @@ end
 
 def eye_config
   eye_config = new_resource.eye_config
-  eye_config.merge!('logger' => ::File.join(new_resource.eye_home_path, 'log', 'eye.log')) unless eye_config['logger']
+  eye_config.merge!(
+    'logger' => ::File.join(new_resource.eye_home_path, 'log', 'eye.log')
+  ) if eye_config.is_a?(Hash) && !eye_config['logger']
   eye_config
 end
 
