@@ -102,10 +102,10 @@ unless defined?(ChefEyeCookbook::ConfigRender)
         parameters = method.parameters
         self.class.send(:define_method, renderer_name) do |args|
           params = if parameters.size > 0
-                     "(#{expand_args(args)})"
-                   else
-                     ''
-                   end
+            "(#{expand_args(args)})"
+          else
+            ''
+          end
           method.name.to_s + params
         end
       end
@@ -118,10 +118,10 @@ unless defined?(ChefEyeCookbook::ConfigRender)
         self.class.send(:define_method, renderer_name) do |value|
           value.each_with_object([]) do |(name, arg), ret|
             params = if parameters.size > 1
-                       "#{name.to_source(source_mode)}, #{arg.to_source(source_mode)}"
-                     else
-                       arg.to_source(source_mode)
-                     end
+              "#{name.to_source(source_mode)}, #{arg.to_source(source_mode)}"
+            else
+              arg.to_source(source_mode)
+            end
             ret.push("#{method.name}(#{params})")
           end
         end

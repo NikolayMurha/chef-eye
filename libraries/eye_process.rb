@@ -36,7 +36,9 @@ module ChefEyeCookbook
     end
 
     def send_command!(*args)
-      raise 'Eye service is not running!' unless running?
+      unless running?
+        raise "Eye service #{pid ? "#{pid} " : ''}(#{@pid_file}) is not running!"
+      end
       return unless yield if block_given?
       run_command(*args)
     end
@@ -55,7 +57,7 @@ module ChefEyeCookbook
       if ::File.exist?(@pid_file)
         ::File.read(@pid_file).to_i
       else
-        false
+        nil
       end
     end
 
